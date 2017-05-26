@@ -5,8 +5,26 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfDemo"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
+        Title="MainWindow" Height="160" Width="320">
+    <Grid Margin="4">
+        <Grid.Resources>
+            <Style TargetType="Button">
+                <Setter Property="Margin" Value="4"/>
+                <Setter Property="VerticalAlignment" Value="Top"/>
+                <Setter Property="Height" Value="48"/>
+            </Style>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Button Grid.Row="0" Grid.Column="0" x:Name="btnStart" Content="Start Record" Click="btnStart_Click"/>
+        <Button Grid.Row="0" Grid.Column="1" x:Name="btnStop" Content="Stop Record" Click="btnStop_Click"/>
+        <Button Grid.Row="1" Grid.Column="0" x:Name="btnWav2Spx" Content="Wav To Spx" Click="btnWav2Spx_Click"/>
+        <Button Grid.Row="1" Grid.Column="1" x:Name="btnSpx2Wav" Content="Spx To Wav" Click="btnSpx2Wav_Click"/>
     </Grid>
 </Window>
