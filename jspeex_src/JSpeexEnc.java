@@ -156,10 +156,9 @@ public class JSpeexEnc
    * @param args Command line parameters.
    * @exception IOException
    */
-  public static void main(String[] args)
+  public static void main(final String[] args)
     throws IOException
   {
-      args = new String[]{"C:\\Temp\\20170526230839.wav","C:\\Temp\\j20170526230839.spx"};
     JSpeexEnc encoder = new JSpeexEnc();
     if (encoder.parseArgs(args)) {
       encoder.encode();

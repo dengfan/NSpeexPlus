@@ -17,7 +17,7 @@ namespace NSpeex.Plus
     public class JSpeexEnc
     {
         /** Version of the Speex Encoder */
-        public static readonly String VERSION = "Java Speex Command Line Encoder v0.9.7 ($Revision$)";
+        public static readonly String VERSION = "NSpeex";
 
         /** Print level for messages : Print debug information */
         public static readonly int DEBUG = 0;
@@ -58,7 +58,7 @@ namespace NSpeex.Plus
         /** Defines the encoder VBR quality setting (float from 0 to 10). */
         protected float vbr_quality = -1;
         /** Defines whether or not to use VBR (Variable Bit Rate). */
-        protected bool vbr = false;
+        protected bool vbr = true;
         /** Defines whether or not to use VAD (Voice Activity Detection). */
         protected bool vad = false;
         /** Defines whether or not to use DTX (Discontinuous Transmission). */

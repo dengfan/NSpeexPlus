@@ -29,7 +29,7 @@ namespace NSpeex.Plus
         /** Wave type code of PCM */
         public static readonly short WAVE_FORMAT_PCM = 0x01;
         /** Wave type code of Speex */
-        public static readonly short WAVE_FORMAT_SPEEX = unchecked((short)0xa109);
+        public static readonly ushort WAVE_FORMAT_SPEEX = 0xa109;
 
         /**
          * Table describing the number of frames per packet in a Speex Wave file,
@@ -162,11 +162,12 @@ namespace NSpeex.Plus
         {
             /* update the total file length field from RIFF chunk */
             raf.BaseStream.Seek(4, SeekOrigin.Begin);
-            raf.Write(raf.BaseStream.Length - 8);
+            int fileLength = (int)raf.BaseStream.Length - 8;
+            writeInt(raf, fileLength);
 
             /* update the data chunk length size */
             raf.BaseStream.Seek(40, SeekOrigin.Begin);
-            raf.Write(size);
+            writeInt(raf, size);
 
             /* close the output file */
             raf.Close();
@@ -201,49 +202,47 @@ namespace NSpeex.Plus
          */
         public override void WriteHeader(String comment)
         {
-            // Writes the RIFF chunk indicating wave format
-            byte[] chkid = System.Text.Encoding.UTF8.GetBytes("RIFF");
+            /* writes the RIFF chunk indicating wave format */
+            byte[] chkid = Encoding.Default.GetBytes("RIFF");
             raf.Write(chkid, 0, chkid.Length);
-            raf.Write(0); /* total length must be blank */
-            chkid = System.Text.Encoding.UTF8.GetBytes("WAVE");
+            writeInt(raf, 0); /* total length must be blank */
+            chkid = Encoding.Default.GetBytes("WAVE");
             raf.Write(chkid, 0, chkid.Length);
 
             /* format subchunk: of size 16 */
-            chkid = System.Text.Encoding.UTF8.GetBytes("fmt ");
+            chkid = Encoding.Default.GetBytes("fmt ");
             raf.Write(chkid, 0, chkid.Length);
             if (isPCM)
             {
-                raf.Write(16); // Size of format chunk
-                raf.Write(WAVE_FORMAT_PCM); // Format tag: PCM
-                raf.Write((short)channels); // Number of channels
-                raf.Write(sampleRate); // Sampling frequency
-                raf.Write(sampleRate * channels * 2); // Average bytes per second
-                raf.Write((short)(channels * 2)); // Blocksize of data
-                raf.Write((short)16); // Bits per sample
+                writeInt(raf, 16);                            // Size of format chunk
+                writeShort(raf, WAVE_FORMAT_PCM);             // Format tag: PCM
+                writeShort(raf, (short)channels);             // Number of channels
+                writeInt(raf, sampleRate);                    // Sampling frequency
+                writeInt(raf, sampleRate * channels * 2);         // Average bytes per second
+                writeShort(raf, (short)(channels * 2));        // Blocksize of data
+                writeShort(raf, (short)16);                  // Bits per sample
             }
             else
             {
                 int length = comment.Length;
-                raf.Write((short)(18 + 2 + 80 + length)); // Size of format chunk
-                raf.Write(WAVE_FORMAT_SPEEX); // Format tag: Speex
-                raf.Write((short)channels); // Number of channels
-                raf.Write(sampleRate); // Sampling frequency
-                raf.Write((calculateEffectiveBitrate(mode, channels, quality) + 7) >> 3); // Average bytes per second
-                raf.Write((short)calculateBlockSize(mode, channels, quality)); // Blocksize of data
-                raf.Write((short)quality); // Bits per sample
-                raf.Write((short)(2 + 80 + length)); // The count in bytes of the extra size
-                                                     // FIXME: Probably wrong!!!
-                raf.Write(0xff & 1); // ACM major version number
-                raf.Write(0xff & 0); // ACM minor version number
-                raf.Write(BuildSpeexHeader(sampleRate, mode,
-                        channels, vbr, nframes));
+                writeInt(raf, (short)(18 + 2 + 80 + length));      // Size of format chunk
+                writeShort(raf, WAVE_FORMAT_SPEEX);           // Format tag: Speex
+                writeShort(raf, (short)channels);             // Number of channels
+                writeInt(raf, sampleRate);                    // Sampling frequency
+                writeInt(raf, (calculateEffectiveBitrate(mode, channels, quality) + 7) >> 3); // Average bytes per second
+                writeShort(raf, (short)calculateBlockSize(mode, channels, quality)); // Blocksize of data
+                writeShort(raf, (short)quality);             // Bits per sample
+                writeShort(raf, (short)(2 + 80 + length));       // The count in bytes of the extra size
+                raf.Write(0xff & 1);                      // ACM major version number
+                raf.Write(0xff & 0);                      // ACM minor version number
+                raf.Write(buildSpeexHeader(sampleRate, mode, channels, vbr, nframes));
                 raf.Write(comment);
             }
 
             /* write the start of data chunk */
-            chkid = System.Text.Encoding.UTF8.GetBytes("data");
+            chkid = Encoding.Default.GetBytes("data");
             raf.Write(chkid, 0, chkid.Length);
-            raf.Write(0);
+            writeInt(raf, 0);
         }
 
         /**
