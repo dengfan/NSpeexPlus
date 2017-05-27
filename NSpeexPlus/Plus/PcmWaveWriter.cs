@@ -206,9 +206,9 @@ namespace NSpeex.Plus
         /// Open the output file.
         /// </summary>
         /// <exception cref="IOException"></exception>
-        public override void Open(String fileName)
+        public override void Open(String filePath)
         {
-            raf = new BinaryWriter(new FileStream(fileName, FileMode.OpenOrCreate));
+            raf = new BinaryWriter(new FileStream(filePath, FileMode.OpenOrCreate));
             size = 0;
         }
 
