@@ -130,7 +130,7 @@ namespace NSpeex.Plus
             // open the input stream
             BinaryReader reader = new BinaryReader(new FileStream(srcPath, FileMode.Open), Encoding.ASCII);
 
-            AudioFileWriter writer = null;
+            NSpeex.AudioFileWriter writer = null;
             int origchksum;
             int chksum;
             try
@@ -190,8 +190,7 @@ namespace NSpeex.Plus
                                     /* once Speex header read, initialize the wave writer with output format */
                                     if (destFormat == FILE_FORMAT_WAVE)
                                     {
-                                        writer = new PcmWaveWriter(speexDecoder.getSampleRate(),
-                                                                   speexDecoder.getChannels());
+                                        writer = new NSpeex.PcmWaveWriter(speexDecoder.getSampleRate(), speexDecoder.getChannels());
                                     }
                                     else
                                     {
@@ -343,7 +342,7 @@ namespace NSpeex.Plus
                             /* initialize the wave writer with output format */
                             if (destFormat == FILE_FORMAT_WAVE)
                             {
-                                writer = new PcmWaveWriter(sampleRate, channels);
+                                writer = new NSpeex.PcmWaveWriter(sampleRate, channels);
                             }
                             else
                             {

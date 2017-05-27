@@ -170,9 +170,10 @@ public class JSpeexDec
    * @param args Command line parameters.
    * @exception IOException
    */
-  public static void main(final String[] args)
+  public static void main(String[] args)
     throws IOException
   {
+      args = new String[]{"C:\\Temp\\j20170526230839.spx","C:\\Temp\\j20170526230839.spx.wav"};
     JSpeexDec decoder = new JSpeexDec();
     if (decoder.parseArgs(args)) {
       decoder.decode();
