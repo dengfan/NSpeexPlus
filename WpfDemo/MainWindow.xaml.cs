@@ -38,7 +38,7 @@ namespace WpfDemo
             btnStop.IsEnabled = true;
 
             waveSource = new WaveIn();
-            waveSource.WaveFormat = new WaveFormat(44100, 1);
+            waveSource.WaveFormat = new WaveFormat(8000, 1);
 
             waveSource.DataAvailable += new EventHandler<WaveInEventArgs>(waveSource_DataAvailable);
             waveSource.RecordingStopped += new EventHandler<StoppedEventArgs>(waveSource_RecordingStopped);
