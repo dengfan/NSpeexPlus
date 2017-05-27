@@ -159,18 +159,18 @@ namespace NSpeex.Plus
             byte[]
             data;
             /* writes the OGG header page */
-            header = buildOggPageHeader(2, 0, streamSerialNumber, pageCount++, 1,
+            header = BuildOggPageHeader(2, 0, streamSerialNumber, pageCount++, 1,
                                         new byte[] { 80 });
-            data = buildSpeexHeader(sampleRate, mode, channels, vbr, nframes);
+            data = BuildSpeexHeader(sampleRate, mode, channels, vbr, nframes);
             chksum = OggCrc.checksum(0, header, 0, header.Length);
             chksum = OggCrc.checksum(chksum, data, 0, data.Length);
             writeInt(header, 22, chksum);
             xout.Write(header);
             xout.Write(data);
             /* writes the OGG comment page */
-            header = buildOggPageHeader(0, 0, streamSerialNumber, pageCount++, 1,
+            header = BuildOggPageHeader(0, 0, streamSerialNumber, pageCount++, 1,
                                             new byte[] { (byte)(comment.Length + 8) });
-            data = buildSpeexComment(comment);
+            data = BuildSpeexComment(comment);
             chksum = OggCrc.checksum(0, header, 0, header.Length);
             chksum = OggCrc.checksum(chksum, data, 0, data.Length);
             writeInt(header, 22, chksum);
@@ -214,7 +214,7 @@ namespace NSpeex.Plus
             int chksum;
             byte[] header;
             /* writes the OGG header page */
-            header = buildOggPageHeader((eos ? 4 : 0), granulepos, streamSerialNumber,
+            header = BuildOggPageHeader((eos ? 4 : 0), granulepos, streamSerialNumber,
                                         pageCount++, packetCount, headerBuffer);
             chksum = OggCrc.checksum(0, header, 0, header.Length);
             chksum = OggCrc.checksum(chksum, dataBuffer, 0, dataBufferPtr);

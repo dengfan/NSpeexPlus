@@ -219,7 +219,8 @@ namespace NSpeex.Plus
                                                          int offsetOutput,
                                                          int length)
         {
-            if (pcm16bitBytes.Length - offsetInput < 2 * length)
+            sbyte[] data = ByteAryToSByteAry(pcm16bitBytes);
+            if (data.Length - offsetInput < 2 * length)
             {
                 throw new Exception("Insufficient Samples to convert to floats");
             }
@@ -229,8 +230,23 @@ namespace NSpeex.Plus
             }
             for (int i = 0; i < length; i++)
             {
-                samples[offsetOutput + i] = (float)((pcm16bitBytes[offsetInput + 2 * i] & 0xff) | (pcm16bitBytes[offsetInput + 2 * i + 1] << 8)); // no & 0xff at the end to keep the sign
+                samples[offsetOutput + i] = (float)((data[offsetInput + 2 * i] & 0xff) | (data[offsetInput + 2 * i + 1] << 8)); // no & 0xff at the end to keep the sign
             }
+        }
+
+        public static sbyte[] ByteAryToSByteAry(byte[] myByte)
+        {
+            sbyte[] mySByte = new sbyte[myByte.Length];
+
+            for (int i = 0; i < myByte.Length; i++)
+            {
+                if (myByte[i] > 127)
+                    mySByte[i] = (sbyte)(myByte[i] - 256);
+                else
+                    mySByte[i] = (sbyte)myByte[i];
+            }
+
+            return mySByte;
         }
     }
 

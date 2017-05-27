@@ -17,7 +17,7 @@ namespace NSpeex.Plus
     public class JSpeexEnc
     {
         /** Version of the Speex Encoder */
-        public static readonly String VERSION = "NSpeex";
+        public static readonly String VERSION = VERSION = "Java Speex Command Line Encoder v0.9.7 ($Revision$)";
 
         /** Print level for messages : Print debug information */
         public static readonly int DEBUG = 0;
@@ -28,7 +28,7 @@ namespace NSpeex.Plus
         /** Print level for messages : Print only errors */
         public static readonly int ERROR = 3;
         /** Print level for messages */
-        protected int printlevel = INFO;
+        protected int printlevel = DEBUG;
 
         /** File format for input or output audio file: Raw */
         public static readonly int FILE_FORMAT_RAW = 0;
@@ -58,7 +58,7 @@ namespace NSpeex.Plus
         /** Defines the encoder VBR quality setting (float from 0 to 10). */
         protected float vbr_quality = -1;
         /** Defines whether or not to use VBR (Variable Bit Rate). */
-        protected bool vbr = true;
+        protected bool vbr = false;
         /** Defines whether or not to use VAD (Voice Activity Detection). */
         protected bool vad = false;
         /** Defines whether or not to use DTX (Discontinuous Transmission). */
@@ -109,7 +109,7 @@ namespace NSpeex.Plus
             const int WAVE_FORMAT_PCM = 0x0001;
 
             // Open the input stream
-            BinaryReader reader = new BinaryReader(new FileStream(srcPath, FileMode.Open), Encoding.ASCII);
+            BinaryReader reader = new BinaryReader(new FileStream(srcPath, FileMode.Open));
 
             // Prepare input stream
             if (srcFormat == FILE_FORMAT_WAVE)
@@ -117,8 +117,8 @@ namespace NSpeex.Plus
                 // read the WAVE header
                 reader.Read(temp, 0, HEADERSIZE + 4);
                 // make sure its a WAVE header
-                string str1 = new ASCIIEncoding().GetString(temp.Skip(0).Take(4).ToArray());
-                string str2 = new ASCIIEncoding().GetString(temp.Skip(8).Take(4).ToArray());
+                string str1 = Encoding.Default.GetString(temp.Skip(0).Take(4).ToArray());
+                string str2 = Encoding.Default.GetString(temp.Skip(8).Take(4).ToArray());
                 if (!RIFF.Equals(str1) && !WAVE.Equals(str2))
                 {
                     Console.WriteLine("Not a WAVE file");
@@ -126,7 +126,7 @@ namespace NSpeex.Plus
                 }
                 // Read other header chunks
                 reader.Read(temp, 0, HEADERSIZE);
-                String chunk = new ASCIIEncoding().GetString(temp.Skip(0).Take(4).ToArray());
+                String chunk = Encoding.Default.GetString(temp.Skip(0).Take(4).ToArray());
                 int size = readInt(temp, 4);
                 while (!chunk.Equals(DATA))
                 {
@@ -159,7 +159,7 @@ namespace NSpeex.Plus
 
                     }
                     reader.Read(temp, 0, HEADERSIZE);
-                    chunk = new ASCIIEncoding().GetString(temp.Skip(0).Take(4).ToArray());
+                    chunk = Encoding.Default.GetString(temp.Skip(0).Take(4).ToArray());
                     size = readInt(temp, 4);
                 }
                 if (printlevel <= DEBUG) Console.WriteLine("Data size: " + size);
@@ -262,32 +262,22 @@ namespace NSpeex.Plus
             writer.Open(destPath);
             writer.WriteHeader("Encoded with: " + VERSION);
             int pcmPacketSize = 2 * channels * speexEncoder.getFrameSize();
-            try
+
+            // read until we get to EOF
+            while (reader.BaseStream.Position != reader.BaseStream.Length)
             {
-                // read until we get to EOF
-                while (true)
+                reader.Read(temp, 0, nframes * pcmPacketSize);
+                for (int i = 0; i < nframes; i++)
+                    speexEncoder.processData(temp, i * pcmPacketSize, pcmPacketSize);
+                int encsize = speexEncoder.getProcessedData(temp, 0);
+                if (encsize > 0)
                 {
-                    if (reader.BaseStream.Position == reader.BaseStream.Length)
-                    {
-                        break;
-                    }
-                    reader.Read(temp, 0, nframes * pcmPacketSize);
-                    for (int i = 0; i < nframes; i++)
-                        speexEncoder.processData(temp, i * pcmPacketSize, pcmPacketSize);
-                    int encsize = speexEncoder.getProcessedData(temp, 0);
-                    if (encsize > 0)
-                    {
-                        writer.WritePacket(temp, 0, encsize);
-                    }
+                    writer.WritePacket(temp, 0, encsize);
                 }
             }
-            catch (Exception e) { }
-            finally
-            {
-                writer.Close();
-                reader.Close();
-            }
 
+            writer.Close();
+            reader.Close();
         }
 
         /**
@@ -298,10 +288,11 @@ namespace NSpeex.Plus
          */
         protected static int readInt(byte[] data, int offset)
         {
-            return (data[offset] & 0xff) |
-                   ((data[offset + 1] & 0xff) << 8) |
-                   ((data[offset + 2] & 0xff) << 16) |
-                   (data[offset + 3] << 24); // no 0xff on the last one to keep the sign
+            sbyte[] buf = SpeexEncoder.ByteAryToSByteAry(data);
+            return (buf[offset] & 0xff) |
+                   ((buf[offset + 1] & 0xff) << 8) |
+                   ((buf[offset + 2] & 0xff) << 16) |
+                   (buf[offset + 3] << 24); // no 0xff on the last one to keep the sign
         }
 
         /**
@@ -312,8 +303,9 @@ namespace NSpeex.Plus
          */
         protected static int readShort(byte[] data, int offset)
         {
-            return (data[offset] & 0xff) |
-                   (data[offset + 1] << 8); // no 0xff on the last one to keep the sign
+            sbyte[] buf = SpeexEncoder.ByteAryToSByteAry(data);
+            return (buf[offset] & 0xff) |
+                   (buf[offset + 1] << 8); // no 0xff on the last one to keep the sign
         }
     }
 

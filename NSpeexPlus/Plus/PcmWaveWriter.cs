@@ -29,7 +29,7 @@ namespace NSpeex.Plus
         /** Wave type code of PCM */
         public static readonly short WAVE_FORMAT_PCM = 0x01;
         /** Wave type code of Speex */
-        public static readonly ushort WAVE_FORMAT_SPEEX = 0xa109;
+        public static readonly short WAVE_FORMAT_SPEEX = unchecked((short)0xa109);
 
         /**
          * Table describing the number of frames per packet in a Speex Wave file,
@@ -38,12 +38,20 @@ namespace NSpeex.Plus
          * See end of file for exerpt from SpeexACM code for more explanations.
          */
         public static readonly int[,,] WAVE_FRAME_SIZES = new int[,,]
-          {{{8, 8, 8, 1, 1, 2, 2, 2, 2, 2, 2},   // NB mono
-      {2, 1, 1, 7, 7, 8, 8, 8, 8, 3, 3}},  // NB stereo
-     {{8, 8, 8, 2, 1, 1, 2, 2, 2, 2, 2},   // WB mono
-      {1, 2, 2, 8, 7, 6, 3, 3, 3, 3, 3}},  // WB stereo
-     {{8, 8, 8, 1, 2, 2, 1, 1, 1, 1, 1},   // UWB mono
-      {2, 1, 1, 7, 8, 3, 6, 6, 5, 5, 5}}}; // UWB stereo
+        {
+            {
+                { 8, 8, 8, 1, 1, 2, 2, 2, 2, 2, 2 }, // NB mono
+				{ 2, 1, 1, 7, 7, 8, 8, 8, 8, 3, 3 }  // NB stereo
+			},
+            {
+                { 8, 8, 8, 2, 1, 1, 2, 2, 2, 2, 2 }, // WB mono
+				{ 1, 2, 2, 8, 7, 6, 3, 3, 3, 3, 3 }  // WB stereo
+			},
+            {
+                { 8, 8, 8, 1, 2, 2, 1, 1, 1, 1, 1 }, // UWB mono
+				{ 2, 1, 1, 7, 8, 3, 6, 6, 5, 5, 5 }  // UWB stereo
+			}
+        };
 
         /**
          * Table describing the number of bit per Speex frame, depending on its
@@ -52,12 +60,20 @@ namespace NSpeex.Plus
          * See end of file for exerpt from SpeexACM code for more explanations.
          */
         public static readonly int[,,] WAVE_BITS_PER_FRAME = new int[,,]
-          {{{ 43,  79, 119, 160, 160, 220, 220, 300, 300, 364, 492},   // NB mono
-      { 60,  96, 136, 177, 177, 237, 237, 317, 317, 381, 509}},  // NB stereo
-     {{ 79, 115, 155, 196, 256, 336, 412, 476, 556, 684, 844},   // WB mono
-      { 96, 132, 172, 213, 273, 353, 429, 493, 573, 701, 861}},  // WB stereo
-     {{ 83, 151, 191, 232, 292, 372, 448, 512, 592, 720, 880},   // UWB mono
-      {100, 168, 208, 249, 309, 389, 465, 529, 609, 737, 897}}}; // UWB stereo
+        {
+            {
+                { 43, 79, 119, 160, 160, 220, 220, 300, 300, 364, 492 }, // NB mono
+				{ 60, 96, 136, 177, 177, 237, 237, 317, 317, 381, 509 }  // NB stereo
+			},
+            {
+                { 79, 115, 155, 196, 256, 336, 412, 476, 556, 684, 844 }, // WB mono
+				{ 96, 132, 172, 213, 273, 353, 429, 493, 573, 701, 861 }  // WB stereo
+			},
+            {
+                { 83, 151, 191, 232, 292, 372, 448, 512, 592, 720, 880 }, // UWB mono
+				{ 100, 168, 208, 249, 309, 389, 465, 529, 609, 737, 897 } // UWB stereo
+			}
+        };
 
         private BinaryWriter raf;
         /** Defines the encoder mode (0=NB, 1=WB and 2-UWB). */
@@ -200,12 +216,63 @@ namespace NSpeex.Plus
          * @param comment ignored by the WAV header.
          * @exception IOException
          */
+        //public override void WriteHeader(String comment)
+        //{
+        //    /* writes the RIFF chunk indicating wave format */
+        //    byte[] chkid = Encoding.Default.GetBytes("RIFF");
+        //    raf.Write(chkid, 0, chkid.Length);
+        //    writeInt(raf, 0); /* total length must be blank */
+        //    chkid = Encoding.Default.GetBytes("WAVE");
+        //    raf.Write(chkid, 0, chkid.Length);
+
+        //    /* format subchunk: of size 16 */
+        //    chkid = Encoding.Default.GetBytes("fmt ");
+        //    raf.Write(chkid, 0, chkid.Length);
+        //    if (isPCM)
+        //    {
+        //        writeInt(raf, 16);                            // Size of format chunk
+        //        writeShort(raf, WAVE_FORMAT_PCM);             // Format tag: PCM
+        //        writeShort(raf, (short)channels);             // Number of channels
+        //        writeInt(raf, sampleRate);                    // Sampling frequency
+        //        writeInt(raf, sampleRate * channels * 2);         // Average bytes per second
+        //        writeShort(raf, (short)(channels * 2));        // Blocksize of data
+        //        writeShort(raf, (short)16);                  // Bits per sample
+        //    }
+        //    else
+        //    {
+        //        int length = comment.Length;
+        //        writeInt(raf, (short)(18 + 2 + 80 + length));      // Size of format chunk
+        //        writeShort(raf, WAVE_FORMAT_SPEEX);           // Format tag: Speex
+        //        writeShort(raf, (short)channels);             // Number of channels
+        //        writeInt(raf, sampleRate);                    // Sampling frequency
+        //        writeInt(raf, (calculateEffectiveBitrate(mode, channels, quality) + 7) >> 3); // Average bytes per second
+        //        writeShort(raf, (short)calculateBlockSize(mode, channels, quality)); // Blocksize of data
+        //        writeShort(raf, (short)quality);             // Bits per sample
+        //        writeShort(raf, (short)(2 + 80 + length));       // The count in bytes of the extra size
+        //        raf.Write(0xff & 1);                      // ACM major version number
+        //        raf.Write(0xff & 0);                      // ACM minor version number
+        //        raf.Write(buildSpeexHeader(sampleRate, mode, channels, vbr, nframes));
+        //        raf.Write(comment);
+        //    }
+
+        //    /* write the start of data chunk */
+        //    chkid = Encoding.Default.GetBytes("data");
+        //    raf.Write(chkid, 0, chkid.Length);
+        //    writeInt(raf, 0);
+        //}
+
+        /// <summary>
+        /// Writes the initial data chunks that start the wave file. Prepares file
+        /// for data samples to written.
+        /// </summary>
+        /// <param name="comment">ignored by the WAV header.</param>
+        /// <exception cref="IOException"></exception>
         public override void WriteHeader(String comment)
         {
-            /* writes the RIFF chunk indicating wave format */
+            // Writes the RIFF chunk indicating wave format
             byte[] chkid = Encoding.Default.GetBytes("RIFF");
             raf.Write(chkid, 0, chkid.Length);
-            writeInt(raf, 0); /* total length must be blank */
+            raf.Write(0); /* total length must be blank */
             chkid = Encoding.Default.GetBytes("WAVE");
             raf.Write(chkid, 0, chkid.Length);
 
@@ -214,35 +281,37 @@ namespace NSpeex.Plus
             raf.Write(chkid, 0, chkid.Length);
             if (isPCM)
             {
-                writeInt(raf, 16);                            // Size of format chunk
-                writeShort(raf, WAVE_FORMAT_PCM);             // Format tag: PCM
-                writeShort(raf, (short)channels);             // Number of channels
-                writeInt(raf, sampleRate);                    // Sampling frequency
-                writeInt(raf, sampleRate * channels * 2);         // Average bytes per second
-                writeShort(raf, (short)(channels * 2));        // Blocksize of data
-                writeShort(raf, (short)16);                  // Bits per sample
+                raf.Write(16); // Size of format chunk
+                raf.Write(WAVE_FORMAT_PCM); // Format tag: PCM
+                raf.Write((short)channels); // Number of channels
+                raf.Write(sampleRate); // Sampling frequency
+                raf.Write(sampleRate * channels * 2); // Average bytes per second
+                raf.Write((short)(channels * 2)); // Blocksize of data
+                raf.Write((short)16); // Bits per sample
             }
             else
             {
                 int length = comment.Length;
-                writeInt(raf, (short)(18 + 2 + 80 + length));      // Size of format chunk
-                writeShort(raf, WAVE_FORMAT_SPEEX);           // Format tag: Speex
-                writeShort(raf, (short)channels);             // Number of channels
-                writeInt(raf, sampleRate);                    // Sampling frequency
-                writeInt(raf, (calculateEffectiveBitrate(mode, channels, quality) + 7) >> 3); // Average bytes per second
-                writeShort(raf, (short)calculateBlockSize(mode, channels, quality)); // Blocksize of data
-                writeShort(raf, (short)quality);             // Bits per sample
-                writeShort(raf, (short)(2 + 80 + length));       // The count in bytes of the extra size
-                raf.Write(0xff & 1);                      // ACM major version number
-                raf.Write(0xff & 0);                      // ACM minor version number
-                raf.Write(buildSpeexHeader(sampleRate, mode, channels, vbr, nframes));
+                raf.Write((short)(18 + 2 + 80 + length)); // Size of format chunk
+                raf.Write(WAVE_FORMAT_SPEEX); // Format tag: Speex
+                raf.Write((short)channels); // Number of channels
+                raf.Write(sampleRate); // Sampling frequency
+                raf.Write((CalculateEffectiveBitrate(mode, channels, quality) + 7) >> 3); // Average bytes per second
+                raf.Write((short)CalculateBlockSize(mode, channels, quality)); // Blocksize of data
+                raf.Write((short)quality); // Bits per sample
+                raf.Write((short)(2 + 80 + length)); // The count in bytes of the extra size
+                                                     // FIXME: Probably wrong!!!
+                raf.Write(0xff & 1); // ACM major version number
+                raf.Write(0xff & 0); // ACM minor version number
+                raf.Write(BuildSpeexHeader(sampleRate, mode,
+                        channels, vbr, nframes));
                 raf.Write(comment);
             }
 
             /* write the start of data chunk */
             chkid = Encoding.Default.GetBytes("data");
             raf.Write(chkid, 0, chkid.Length);
-            writeInt(raf, 0);
+            raf.Write(0);
         }
 
         /**
@@ -268,7 +337,7 @@ namespace NSpeex.Plus
          * @param quality
          * @return effective bitrate (considering padding).
          */
-        private static int calculateEffectiveBitrate(int mode,
+        private static int CalculateEffectiveBitrate(int mode,
                                                            int channels,
                                                            int quality)
         {
@@ -285,7 +354,7 @@ namespace NSpeex.Plus
          * @param quality
          * @return block size (considering padding).
          */
-        private static int calculateBlockSize(int mode,
+        private static int CalculateBlockSize(int mode,
                                                     int channels,
                                                     int quality)
         {

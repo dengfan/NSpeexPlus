@@ -34,7 +34,7 @@ namespace NSpeex.Plus
         /** Print level for messages : Print only errors */
         public static readonly int ERROR = 3;
         /** Print level for messages */
-        protected int printlevel = INFO;
+        protected int printlevel = DEBUG;
 
         /** File format for input or output audio file: Raw */
         public static readonly int FILE_FORMAT_RAW = 0;
@@ -128,7 +128,7 @@ namespace NSpeex.Plus
             // construct a new decoder
             speexDecoder = new SpeexDecoder();
             // open the input stream
-            BinaryReader reader = new BinaryReader(new FileStream(srcPath, FileMode.Open), Encoding.ASCII);
+            BinaryReader reader = new BinaryReader(new FileStream(srcPath, FileMode.Open));
 
             AudioFileWriter writer = null;
             int origchksum;
@@ -136,13 +136,8 @@ namespace NSpeex.Plus
             try
             {
                 // read until we get to EOF
-                while (true)
+                while (reader.BaseStream.Position != reader.BaseStream.Length)
                 {
-                    if (reader.BaseStream.Position == reader.BaseStream.Length)
-                    {
-                        break;
-                    }
-
                     if (srcFormat == FILE_FORMAT_OGG)
                     {
                         // read the OGG header
@@ -155,7 +150,7 @@ namespace NSpeex.Plus
                         chksum = OggCrc.checksum(0, header, 0, OGG_HEADERSIZE);
 
                         // make sure its a OGG header
-                        string oggId = new ASCIIEncoding().GetString(header.Skip(0).Take(4).ToArray());
+                        string oggId = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
                         if (!OGGID.Equals(oggId))
                         {
                             Console.WriteLine("missing ogg id!");
@@ -190,8 +185,7 @@ namespace NSpeex.Plus
                                     /* once Speex header read, initialize the wave writer with output format */
                                     if (destFormat == FILE_FORMAT_WAVE)
                                     {
-                                        writer = new PcmWaveWriter(speexDecoder.getSampleRate(),
-                                                                   speexDecoder.getChannels());
+                                        writer = new PcmWaveWriter(speexDecoder.getSampleRate(), speexDecoder.getChannels());
                                     }
                                     else
                                     {
@@ -251,8 +245,8 @@ namespace NSpeex.Plus
                                 // read the WAVE header
                                 reader.Read(header, 0, WAV_HEADERSIZE + 4);
                                 // make sure its a WAVE header
-                                string str1 = new ASCIIEncoding().GetString(header.Skip(0).Take(4).ToArray());
-                                string str2 = new ASCIIEncoding().GetString(header.Skip(8).Take(4).ToArray());
+                                string str1 = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
+                                string str2 = Encoding.Default.GetString(header.Skip(8).Take(4).ToArray());
                                 if (!RIFF.Equals(str1) && !WAVE.Equals(str2))
                                 {
                                     Console.WriteLine("Not a WAVE file");
@@ -260,7 +254,7 @@ namespace NSpeex.Plus
                                 }
                                 // Read other header chunks
                                 reader.Read(header, 0, WAV_HEADERSIZE);
-                                String chunk = new ASCIIEncoding().GetString(header.Skip(0).Take(4).ToArray());
+                                String chunk = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
                                 int size = readInt(header, 4);
                                 while (!chunk.Equals(DATA))
                                 {
@@ -301,7 +295,7 @@ namespace NSpeex.Plus
                                         readSpeexHeader(header, 20, 80);
                                     }
                                     reader.Read(header, 0, WAV_HEADERSIZE);
-                                    chunk = new ASCIIEncoding().GetString(header.Skip(0).Take(4).ToArray());
+                                    chunk = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
                                     size = readInt(header, 4);
                                 }
                                 if (printlevel <= DEBUG) Console.WriteLine("Data size: " + size);
@@ -423,7 +417,7 @@ namespace NSpeex.Plus
                 Console.WriteLine("Oooops");
                 return false;
             }
-            string oggId = new ASCIIEncoding().GetString(packet.Skip(offset).Take(8).ToArray());
+            string oggId = Encoding.Default.GetString(packet.Skip(offset).Take(8).ToArray());
             if (!"Speex   ".Equals(oggId))
             {
                 return false;
@@ -443,10 +437,11 @@ namespace NSpeex.Plus
          */
         protected static int readInt(byte[] data, int offset)
         {
-            return (data[offset] & 0xff) |
-                   ((data[offset + 1] & 0xff) << 8) |
-                   ((data[offset + 2] & 0xff) << 16) |
-                   (data[offset + 3] << 24); // no 0xff on the last one to keep the sign
+            sbyte[] buf = SpeexEncoder.ByteAryToSByteAry(data);
+            return (buf[offset] & 0xff) |
+                   ((buf[offset + 1] & 0xff) << 8) |
+                   ((buf[offset + 2] & 0xff) << 16) |
+                   (buf[offset + 3] << 24); // no 0xff on the last one to keep the sign
         }
 
         /**
@@ -457,8 +452,9 @@ namespace NSpeex.Plus
          */
         protected static int readShort(byte[] data, int offset)
         {
-            return (data[offset] & 0xff) |
-                   (data[offset + 1] << 8); // no 0xff on the last one to keep the sign
+            sbyte[] buf = SpeexEncoder.ByteAryToSByteAry(data);
+            return (buf[offset] & 0xff) |
+                   (buf[offset + 1] << 8); // no 0xff on the last one to keep the sign
         }
     }
 
