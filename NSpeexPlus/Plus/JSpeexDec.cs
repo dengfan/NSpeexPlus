@@ -133,225 +133,80 @@ namespace NSpeex.Plus
             AudioFileWriter writer = null;
             int origchksum;
             int chksum;
-            try
-            {
-                // read until we get to EOF
-                while (reader.BaseStream.Position != reader.BaseStream.Length)
-                {
-                    if (srcFormat == FILE_FORMAT_OGG)
-                    {
-                        // read the OGG header
-                        reader.Read(header, 0, OGG_HEADERSIZE);
-                        origchksum = readInt(header, 22);
-                        header[22] = 0;
-                        header[23] = 0;
-                        header[24] = 0;
-                        header[25] = 0;
-                        chksum = OggCrc.checksum(0, header, 0, OGG_HEADERSIZE);
 
-                        // make sure its a OGG header
-                        string oggId = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
-                        if (!OGGID.Equals(oggId))
+            // read until we get to EOF
+            while (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                if (srcFormat == FILE_FORMAT_OGG)
+                {
+                    // read the OGG header
+                    reader.Read(header, 0, OGG_HEADERSIZE);
+                    origchksum = readInt(header, 22);
+                    header[22] = 0;
+                    header[23] = 0;
+                    header[24] = 0;
+                    header[25] = 0;
+                    chksum = OggCrc.checksum(0, header, 0, OGG_HEADERSIZE);
+
+                    // make sure its a OGG header
+                    string oggId = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
+                    if (!OGGID.Equals(oggId))
+                    {
+                        Console.WriteLine("missing ogg id!");
+                        return;
+                    }
+
+                    /* how many segments are there? */
+                    segments = header[OGG_SEGOFFSET] & 0xFF;
+                    reader.Read(header, OGG_HEADERSIZE, segments);
+                    chksum = OggCrc.checksum(chksum, header, OGG_HEADERSIZE, segments);
+
+                    /* decode each segment, writing output to wav */
+                    for (curseg = 0; curseg < segments; curseg++)
+                    {
+                        /* get the number of bytes in the segment */
+                        bodybytes = header[OGG_HEADERSIZE + curseg] & 0xFF;
+                        if (bodybytes == 255)
                         {
-                            Console.WriteLine("missing ogg id!");
+                            Console.WriteLine("sorry, don't handle 255 sizes!");
                             return;
                         }
+                        reader.Read(payload, 0, bodybytes);
+                        chksum = OggCrc.checksum(chksum, payload, 0, bodybytes);
 
-                        /* how many segments are there? */
-                        segments = header[OGG_SEGOFFSET] & 0xFF;
-                        reader.Read(header, OGG_HEADERSIZE, segments);
-                        chksum = OggCrc.checksum(chksum, header, OGG_HEADERSIZE, segments);
-
-                        /* decode each segment, writing output to wav */
-                        for (curseg = 0; curseg < segments; curseg++)
-                        {
-                            /* get the number of bytes in the segment */
-                            bodybytes = header[OGG_HEADERSIZE + curseg] & 0xFF;
-                            if (bodybytes == 255)
-                            {
-                                Console.WriteLine("sorry, don't handle 255 sizes!");
-                                return;
-                            }
-                            reader.Read(payload, 0, bodybytes);
-                            chksum = OggCrc.checksum(chksum, payload, 0, bodybytes);
-
-                            /* decode the segment */
-                            /* if first packet, read the Speex header */
-                            if (packetNo == 0)
-                            {
-                                if (readSpeexHeader(payload, 0, bodybytes))
-                                {
-
-                                    /* once Speex header read, initialize the wave writer with output format */
-                                    if (destFormat == FILE_FORMAT_WAVE)
-                                    {
-                                        writer = new PcmWaveWriter(speexDecoder.getSampleRate(), speexDecoder.getChannels());
-                                    }
-                                    else
-                                    {
-                                        //writer = new RawWriter();
-                                        Console.WriteLine("暂不支持");
-                                        return;
-                                    }
-                                    writer.Open(destPath);
-                                    writer.WriteHeader(null);
-                                    packetNo++;
-                                }
-                                else
-                                {
-                                    packetNo = 0;
-                                }
-                            }
-                            else if (packetNo == 1)
-                            { // Ogg Comment packet
-                                packetNo++;
-                            }
-                            else
-                            {
-                                if (loss > 0 && new Random().Next(100) < loss)
-                                {
-                                    speexDecoder.processData(null, 0, bodybytes);
-                                    for (int i = 1; i < nframes; i++)
-                                    {
-                                        speexDecoder.processData(true);
-                                    }
-                                }
-                                else
-                                {
-                                    speexDecoder.processData(payload, 0, bodybytes);
-                                    for (int i = 1; i < nframes; i++)
-                                    {
-                                        speexDecoder.processData(false);
-                                    }
-                                }
-                                /* get the amount of decoded data */
-                                if ((decsize = speexDecoder.getProcessedData(decdat, 0)) > 0)
-                                {
-                                    writer.WritePacket(decdat, 0, decsize);
-                                }
-                                packetNo++;
-                            }
-                        }
-                        if (chksum != origchksum)
-                            throw new IOException("Ogg CheckSums do not match");
-                    }
-                    else
-                    { // Wave or Raw Speex
-                      /* if first packet, initialise everything */
+                        /* decode the segment */
+                        /* if first packet, read the Speex header */
                         if (packetNo == 0)
                         {
-                            if (srcFormat == FILE_FORMAT_WAVE)
-                            {
-                                // read the WAVE header
-                                reader.Read(header, 0, WAV_HEADERSIZE + 4);
-                                // make sure its a WAVE header
-                                string str1 = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
-                                string str2 = Encoding.Default.GetString(header.Skip(8).Take(4).ToArray());
-                                if (!RIFF.Equals(str1) && !WAVE.Equals(str2))
-                                {
-                                    Console.WriteLine("Not a WAVE file");
-                                    return;
-                                }
-                                // Read other header chunks
-                                reader.Read(header, 0, WAV_HEADERSIZE);
-                                String chunk = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
-                                int size = readInt(header, 4);
-                                while (!chunk.Equals(DATA))
-                                {
-                                    reader.Read(header, 0, size);
-                                    if (chunk.Equals(FORMAT))
-                                    {
-                                        /*
-                                        typedef struct waveformat_extended_tag {
-                                        WORD wFormatTag; // format type
-                                        WORD nChannels; // number of channels (i.e. mono, stereo...)
-                                        DWORD nSamplesPerSec; // sample rate
-                                        DWORD nAvgBytesPerSec; // for buffer estimation
-                                        WORD nBlockAlign; // block size of data
-                                        WORD wBitsPerSample; // Number of bits per sample of mono data
-                                        WORD cbSize; // The count in bytes of the extra size 
-                                        } WAVEFORMATEX;
-                                        */
-                                        if (readShort(header, 0) != WAVE_FORMAT_SPEEX)
-                                        {
-                                            Console.WriteLine("Not a Wave Speex file");
-                                            return;
-                                        }
-                                        channels = readShort(header, 2);
-                                        sampleRate = readInt(header, 4);
-                                        bodybytes = readShort(header, 12);
-                                        /*
-                                        The extra data in the wave format are
-                                        18 : ACM major version number
-                                        19 : ACM minor version number
-                                        20-100 : Speex header
-                                        100-... : Comment ?
-                                        */
-                                        if (readShort(header, 16) < 82)
-                                        {
-                                            Console.WriteLine("Possibly corrupt Speex Wave file.");
-                                            return;
-                                        }
-                                        readSpeexHeader(header, 20, 80);
-                                    }
-                                    reader.Read(header, 0, WAV_HEADERSIZE);
-                                    chunk = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
-                                    size = readInt(header, 4);
-                                }
-                                if (printlevel <= DEBUG) Console.WriteLine("Data size: " + size);
-                            }
-                            else
+                            if (readSpeexHeader(payload, 0, bodybytes))
                             {
 
-                                /* initialize the Speex decoder */
-                                speexDecoder.init(mode, sampleRate, channels, enhanced);
-                                if (!vbr)
+                                /* once Speex header read, initialize the wave writer with output format */
+                                if (destFormat == FILE_FORMAT_WAVE)
                                 {
-                                    switch (mode)
-                                    {
-                                        case 0:
-                                            bodybytes = NbEncoder.NB_FRAME_SIZE[NbEncoder.NB_QUALITY_MAP[quality]];
-                                            break;
-                                        //Wideband
-                                        case 1:
-                                            bodybytes = SbEncoder.NB_FRAME_SIZE[SbEncoder.NB_QUALITY_MAP[quality]];
-                                            bodybytes += SbEncoder.SB_FRAME_SIZE[SbEncoder.WB_QUALITY_MAP[quality]];
-                                            break;
-                                        case 2:
-                                            bodybytes = SbEncoder.NB_FRAME_SIZE[SbEncoder.NB_QUALITY_MAP[quality]];
-                                            bodybytes += SbEncoder.SB_FRAME_SIZE[SbEncoder.WB_QUALITY_MAP[quality]];
-                                            bodybytes += SbEncoder.SB_FRAME_SIZE[SbEncoder.UWB_QUALITY_MAP[quality]];
-                                            break;
-                                        //*/
-                                        default:
-                                            throw new IOException("Illegal mode encoundered.");
-                                    }
-                                    bodybytes = (bodybytes + 7) >> 3;
+                                    writer = new PcmWaveWriter(speexDecoder.getSampleRate(), speexDecoder.getChannels());
                                 }
                                 else
                                 {
-                                    // We have read the stream to find out more
-                                    bodybytes = 0;
+                                    //writer = new RawWriter();
+                                    Console.WriteLine("暂不支持");
+                                    return;
                                 }
-                            }
-                            /* initialize the wave writer with output format */
-                            if (destFormat == FILE_FORMAT_WAVE)
-                            {
-                                writer = new PcmWaveWriter(sampleRate, channels);
+                                writer.Open(destPath);
+                                writer.WriteHeader(null);
+                                packetNo++;
                             }
                             else
                             {
-                                //writer = new RawWriter();
-                                Console.WriteLine("暂不支持");
-                                return;
+                                packetNo = 0;
                             }
-                            writer.Open(destPath);
-                            writer.WriteHeader(null);
+                        }
+                        else if (packetNo == 1)
+                        { // Ogg Comment packet
                             packetNo++;
                         }
                         else
                         {
-                            reader.Read(payload, 0, bodybytes);
                             if (loss > 0 && new Random().Next(100) < loss)
                             {
                                 speexDecoder.processData(null, 0, bodybytes);
@@ -376,9 +231,152 @@ namespace NSpeex.Plus
                             packetNo++;
                         }
                     }
+                    if (chksum != origchksum)
+                        throw new IOException("Ogg CheckSums do not match");
+                }
+                else
+                { // Wave or Raw Speex
+                  /* if first packet, initialise everything */
+                    if (packetNo == 0)
+                    {
+                        if (srcFormat == FILE_FORMAT_WAVE)
+                        {
+                            // read the WAVE header
+                            reader.Read(header, 0, WAV_HEADERSIZE + 4);
+                            // make sure its a WAVE header
+                            string str1 = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
+                            string str2 = Encoding.Default.GetString(header.Skip(8).Take(4).ToArray());
+                            if (!RIFF.Equals(str1) && !WAVE.Equals(str2))
+                            {
+                                Console.WriteLine("Not a WAVE file");
+                                return;
+                            }
+                            // Read other header chunks
+                            reader.Read(header, 0, WAV_HEADERSIZE);
+                            String chunk = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
+                            int size = readInt(header, 4);
+                            while (!chunk.Equals(DATA))
+                            {
+                                reader.Read(header, 0, size);
+                                if (chunk.Equals(FORMAT))
+                                {
+                                    /*
+                                    typedef struct waveformat_extended_tag {
+                                    WORD wFormatTag; // format type
+                                    WORD nChannels; // number of channels (i.e. mono, stereo...)
+                                    DWORD nSamplesPerSec; // sample rate
+                                    DWORD nAvgBytesPerSec; // for buffer estimation
+                                    WORD nBlockAlign; // block size of data
+                                    WORD wBitsPerSample; // Number of bits per sample of mono data
+                                    WORD cbSize; // The count in bytes of the extra size 
+                                    } WAVEFORMATEX;
+                                    */
+                                    if (readShort(header, 0) != WAVE_FORMAT_SPEEX)
+                                    {
+                                        Console.WriteLine("Not a Wave Speex file");
+                                        return;
+                                    }
+                                    channels = readShort(header, 2);
+                                    sampleRate = readInt(header, 4);
+                                    bodybytes = readShort(header, 12);
+                                    /*
+                                    The extra data in the wave format are
+                                    18 : ACM major version number
+                                    19 : ACM minor version number
+                                    20-100 : Speex header
+                                    100-... : Comment ?
+                                    */
+                                    if (readShort(header, 16) < 82)
+                                    {
+                                        Console.WriteLine("Possibly corrupt Speex Wave file.");
+                                        return;
+                                    }
+                                    readSpeexHeader(header, 20, 80);
+                                }
+                                reader.Read(header, 0, WAV_HEADERSIZE);
+                                chunk = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
+                                size = readInt(header, 4);
+                            }
+                            if (printlevel <= DEBUG) Console.WriteLine("Data size: " + size);
+                        }
+                        else
+                        {
+
+                            /* initialize the Speex decoder */
+                            speexDecoder.init(mode, sampleRate, channels, enhanced);
+                            if (!vbr)
+                            {
+                                switch (mode)
+                                {
+                                    case 0:
+                                        bodybytes = NbEncoder.NB_FRAME_SIZE[NbEncoder.NB_QUALITY_MAP[quality]];
+                                        break;
+                                    //Wideband
+                                    case 1:
+                                        bodybytes = SbEncoder.NB_FRAME_SIZE[SbEncoder.NB_QUALITY_MAP[quality]];
+                                        bodybytes += SbEncoder.SB_FRAME_SIZE[SbEncoder.WB_QUALITY_MAP[quality]];
+                                        break;
+                                    case 2:
+                                        bodybytes = SbEncoder.NB_FRAME_SIZE[SbEncoder.NB_QUALITY_MAP[quality]];
+                                        bodybytes += SbEncoder.SB_FRAME_SIZE[SbEncoder.WB_QUALITY_MAP[quality]];
+                                        bodybytes += SbEncoder.SB_FRAME_SIZE[SbEncoder.UWB_QUALITY_MAP[quality]];
+                                        break;
+                                    //*/
+                                    default:
+                                        throw new IOException("Illegal mode encoundered.");
+                                }
+                                bodybytes = (bodybytes + 7) >> 3;
+                            }
+                            else
+                            {
+                                // We have read the stream to find out more
+                                bodybytes = 0;
+                            }
+                        }
+                        /* initialize the wave writer with output format */
+                        if (destFormat == FILE_FORMAT_WAVE)
+                        {
+                            writer = new PcmWaveWriter(sampleRate, channels);
+                        }
+                        else
+                        {
+                            //writer = new RawWriter();
+                            Console.WriteLine("暂不支持");
+                            return;
+                        }
+                        writer.Open(destPath);
+                        writer.WriteHeader(null);
+                        packetNo++;
+                    }
+                    else
+                    {
+                        reader.Read(payload, 0, bodybytes);
+                        if (loss > 0 && new Random().Next(100) < loss)
+                        {
+                            speexDecoder.processData(null, 0, bodybytes);
+                            for (int i = 1; i < nframes; i++)
+                            {
+                                speexDecoder.processData(true);
+                            }
+                        }
+                        else
+                        {
+                            speexDecoder.processData(payload, 0, bodybytes);
+                            for (int i = 1; i < nframes; i++)
+                            {
+                                speexDecoder.processData(false);
+                            }
+                        }
+                        /* get the amount of decoded data */
+                        if ((decsize = speexDecoder.getProcessedData(decdat, 0)) > 0)
+                        {
+                            writer.WritePacket(decdat, 0, decsize);
+                        }
+                        packetNo++;
+                    }
                 }
             }
-            catch (EndOfStreamException eof) { }
+
             /* close the output file */
             reader.Close();
             writer.Close();
