@@ -55,12 +55,12 @@ namespace NSpeex.Plus
         /// <summary>
         /// Wave type code of PCM
         /// </summary>
-        protected const short WAVE_FORMAT_PCM = (short)0x01;
+        protected const short WAVE_FORMAT_PCM = 0x01;
 
         /// <summary>
         /// Wave type code of Speex
         /// </summary>
-        protected const short WAVE_FORMAT_SPEEX = unchecked((short)0xa109);
+        protected const ushort WAVE_FORMAT_SPEEX = 0xa109;
 
         /// <summary>
         /// Table describing the number of frames per packet in a Speex Wave file,
@@ -180,12 +180,12 @@ namespace NSpeex.Plus
         public override void Close()
         {
             // Update the total file length field from RIFF chunk
-            raf.BaseStream.Seek(4, System.IO.SeekOrigin.Begin);
+            raf.BaseStream.Seek(4, SeekOrigin.Begin);
             int fileLength = (int)raf.BaseStream.Length - 8;
             raf.Write(fileLength);
 
             // Update the data chunk length size
-            raf.BaseStream.Seek(40, System.IO.SeekOrigin.Begin);
+            raf.BaseStream.Seek(40, SeekOrigin.Begin);
             raf.Write(size);
 
             // Close the output file
@@ -209,7 +209,6 @@ namespace NSpeex.Plus
         public override void Open(String filePath)
         {
             raf = new BinaryWriter(new FileStream(filePath, FileMode.OpenOrCreate));
-            size = 0;
         }
 
         /// <summary>
@@ -221,14 +220,14 @@ namespace NSpeex.Plus
         public override void WriteHeader(String comment)
         {
             // Writes the RIFF chunk indicating wave format
-            byte[] chkid = System.Text.Encoding.UTF8.GetBytes("RIFF");
+            byte[] chkid = System.Text.Encoding.Default.GetBytes("RIFF");
             raf.Write(chkid, 0, chkid.Length);
             raf.Write(0); /* total length must be blank */
-            chkid = System.Text.Encoding.UTF8.GetBytes("WAVE");
+            chkid = System.Text.Encoding.Default.GetBytes("WAVE");
             raf.Write(chkid, 0, chkid.Length);
 
             /* format subchunk: of size 16 */
-            chkid = System.Text.Encoding.UTF8.GetBytes("fmt ");
+            chkid = System.Text.Encoding.Default.GetBytes("fmt ");
             raf.Write(chkid, 0, chkid.Length);
             if (isPCM)
             {
@@ -260,7 +259,7 @@ namespace NSpeex.Plus
             }
 
             /* write the start of data chunk */
-            chkid = System.Text.Encoding.UTF8.GetBytes("data");
+            chkid = System.Text.Encoding.Default.GetBytes("data");
             raf.Write(chkid, 0, chkid.Length);
             raf.Write(0);
         }

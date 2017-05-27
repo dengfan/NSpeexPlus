@@ -209,7 +209,7 @@ namespace NSpeex.Plus
                         }
                         else
                         {
-                            if (loss > 0 && new Random().Next(100) < loss)
+                            if (loss > 0 && random.Next(100) < loss)
                             {
                                 speexDecoder.processData(null, 0, bodybytes);
                                 for (int i = 1; i < nframes; i++)
@@ -353,7 +353,7 @@ namespace NSpeex.Plus
                     else
                     {
                         reader.Read(payload, 0, bodybytes);
-                        if (loss > 0 && new Random().Next(100) < loss)
+                        if (loss > 0 && random.Next(100) < loss)
                         {
                             speexDecoder.processData(null, 0, bodybytes);
                             for (int i = 1; i < nframes; i++)
