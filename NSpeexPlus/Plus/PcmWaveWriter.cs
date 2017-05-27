@@ -209,6 +209,7 @@ namespace NSpeex.Plus
         public override void Open(String filePath)
         {
             raf = new BinaryWriter(new FileStream(filePath, FileMode.OpenOrCreate));
+            size = 0;
         }
 
         /// <summary>
