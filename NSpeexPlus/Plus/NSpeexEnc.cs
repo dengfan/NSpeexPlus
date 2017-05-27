@@ -14,10 +14,10 @@ namespace NSpeex.Plus
      * @author Marc Gimpel, Wimba S.A. (mgimpel@horizonwimba.com)
      * @version $Revision$
      */
-    public class JSpeexEnc
+    public class NSpeexEnc
     {
         /** Version of the Speex Encoder */
-        public static readonly String VERSION = VERSION = "Java Speex Command Line Encoder v0.9.7 ($Revision$)";
+        public const String VERSION = "//github.com/dengfan/NSpeexPlus";
 
         /** Print level for messages : Print debug information */
         public static readonly int DEBUG = 0;
@@ -64,11 +64,13 @@ namespace NSpeex.Plus
         /** Defines whether or not to use DTX (Discontinuous Transmission). */
         protected bool dtx = false;
 
-        /**
-         * Builds a plain JSpeex Encoder with default values.
-         */
-        public JSpeexEnc()
+        public NSpeexEnc()
         {
+        }
+
+        public NSpeexEnc(int printlevel)
+        {
+            this.printlevel = printlevel;
         }
 
         /**

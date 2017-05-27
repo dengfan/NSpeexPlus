@@ -23,7 +23,7 @@ namespace NSpeex.Plus
      * @author Marc Gimpel, Wimba S.A. (mgimpel@horizonwimba.com)
      * @version $Revision$
      */
-    public class JSpeexDec
+    public class NSpeexDec
     {
         /** Print level for messages : Print debug information */
         public static readonly int DEBUG = 0;
@@ -34,7 +34,7 @@ namespace NSpeex.Plus
         /** Print level for messages : Print only errors */
         public static readonly int ERROR = 3;
         /** Print level for messages */
-        protected int printlevel = DEBUG;
+        protected int printlevel = INFO;
 
         /** File format for input or output audio file: Raw */
         public static readonly int FILE_FORMAT_RAW = 0;
@@ -71,11 +71,13 @@ namespace NSpeex.Plus
         /** The percentage of packets to lose in the packet loss simulation. */
         private int loss = 0;
 
-        /**
-         * Builds a plain JSpeex Decoder with default values.
-         */
-        public JSpeexDec()
+        public NSpeexDec()
         {
+        }
+
+        public NSpeexDec(int printlevel)
+        {
+            this.printlevel = printlevel;
         }
 
         /**

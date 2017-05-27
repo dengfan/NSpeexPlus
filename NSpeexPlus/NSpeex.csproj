@@ -220,12 +220,12 @@
     <Compile Include="OggSpeexWriter.cs" />
     <Compile Include="PcmWaveWriter.cs" />
     <Compile Include="Plus\AudioFileWriter.cs" />
-    <Compile Include="Plus\JSpeexEnc.cs" />
+    <Compile Include="Plus\NSpeexEnc.cs" />
     <Compile Include="Plus\OggCrc.cs" />
     <Compile Include="Plus\OggSpeexWriter.cs" />
     <Compile Include="Plus\PcmWaveWriter.cs" />
     <Compile Include="Plus\SpeexDecoder.cs" />
-    <Compile Include="Plus\JSpeexDec.cs" />
+    <Compile Include="Plus\NSpeexDec.cs" />
     <Compile Include="Plus\SpeexEncoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RawWriter.cs" />

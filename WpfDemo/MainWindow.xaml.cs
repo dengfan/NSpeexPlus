@@ -60,13 +60,13 @@ namespace WpfDemo
         private void btnWav2Spx_Click(object sender, RoutedEventArgs e)
         {
             wavFilePath = @"C:\Temp\20170526230839.wav";
-            new JSpeexEnc().encode(wavFilePath, wavFilePath + ".spx");
+            new NSpeexEnc().encode(wavFilePath, wavFilePath + ".spx");
         }
 
         private void btnSpx2Wav_Click(object sender, RoutedEventArgs e)
         {
             spxFilePath = @"C:\Temp\20170526230839.wav.spx";
-            new JSpeexDec().decode(spxFilePath, spxFilePath + ".wav");
+            new NSpeexDec().decode(spxFilePath, spxFilePath + ".wav");
         }
 
         void waveSource_DataAvailable(object sender, WaveInEventArgs e)
