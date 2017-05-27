@@ -265,8 +265,9 @@ namespace NSpeex.Plus
             writer.WriteHeader("Encoded with: " + VERSION);
             int pcmPacketSize = 2 * channels * speexEncoder.getFrameSize();
 
+            int c = 0;
             // read until we get to EOF
-            while (reader.BaseStream.Position != reader.BaseStream.Length)
+            while (reader.BaseStream.Length - reader.BaseStream.Position >= nframes * pcmPacketSize)
             {
                 reader.Read(temp, 0, nframes * pcmPacketSize);
                 for (int i = 0; i < nframes; i++)
@@ -275,11 +276,16 @@ namespace NSpeex.Plus
                 if (encsize > 0)
                 {
                     writer.WritePacket(temp, 0, encsize);
+                    c++;
                 }
             }
 
             writer.Close();
             reader.Close();
+            if (printlevel <= DEBUG)
+            {
+                Console.WriteLine("----->" + c);
+            }
         }
 
         /**

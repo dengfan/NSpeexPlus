@@ -238,33 +238,37 @@ namespace NSpeex.Plus
         /// @exception IOException
         public override void WriteHeader(String comment)
         {
+            int chksum;
             byte[] header;
             byte[] data;
-            NSpeex.OggCrc crc = new NSpeex.OggCrc();
             /* writes the OGG header page */
             header = BuildOggPageHeader(2, 0,
                     streamSerialNumber, pageCount++, 1, new byte[] { 80 });
             data = BuildSpeexHeader(sampleRate, mode,
                     channels, vbr, nframes);
-            crc.Initialize();
-            crc.TransformBlock(header, 0, header.Length, header, 0);
-            crc.TransformFinalBlock(data, 0, data.Length);
-            xout.Write(header, 0, 22);
-            xout.Write(crc.Hash, 0, crc.HashSize / 8);
-            xout.Write(header, 26, header.Length - 26);
-            xout.Write(data, 0, data.Length);
+            chksum = OggCrc.checksum(0, header, 0, header.Length);
+            chksum = OggCrc.checksum(chksum, data, 0, data.Length);
+            byte[] intBytes = BitConverter.GetBytes(chksum);
+            header[22] = intBytes[0];
+            header[23] = intBytes[1];
+            header[24] = intBytes[2];
+            header[25] = intBytes[3];
+            xout.Write(header);
+            xout.Write(data);
             /* writes the OGG comment page */
             header = BuildOggPageHeader(0, 0,
                     streamSerialNumber, pageCount++, 1,
                     new byte[] { (byte)(comment.Length + 8) });
             data = BuildSpeexComment(comment);
-            crc.Initialize();
-            crc.TransformBlock(header, 0, header.Length, header, 0);
-            crc.TransformFinalBlock(data, 0, data.Length);
-            xout.Write(header, 0, 22);
-            xout.Write(crc.Hash, 0, crc.HashSize / 8);
-            xout.Write(header, 26, header.Length - 26);
-            xout.Write(data, 0, data.Length);
+            chksum = OggCrc.checksum(0, header, 0, header.Length);
+            chksum = OggCrc.checksum(chksum, data, 0, data.Length);
+            intBytes = BitConverter.GetBytes(chksum);
+            header[22] = intBytes[0];
+            header[23] = intBytes[1];
+            header[24] = intBytes[2];
+            header[25] = intBytes[3];
+            xout.Write(header);
+            xout.Write(data);
         }
 
         /// <summary>
