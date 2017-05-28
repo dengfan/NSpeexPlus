@@ -17,7 +17,7 @@ namespace NSpeex.Plus
     public class NSpeexEnc
     {
         /** Version of the Speex Encoder */
-        public const String VERSION = "//github.com/dengfan/NSpeexPlus";
+        public const String VERSION = "github.com/dengfan/NSpeexPlus";
 
         /** Print level for messages : Print debug information */
         public static readonly int DEBUG = 0;
@@ -262,12 +262,12 @@ namespace NSpeex.Plus
                 return;
             }
             writer.Open(destPath);
-            writer.WriteHeader("Encoded with: " + VERSION);
+            writer.WriteHeader(VERSION);
             int pcmPacketSize = 2 * channels * speexEncoder.getFrameSize();
 
             int c = 0;
             // read until we get to EOF
-            while (reader.BaseStream.Length - reader.BaseStream.Position >= nframes * pcmPacketSize)
+            while (reader.BaseStream.Length - reader.BaseStream.Position >= pcmPacketSize)
             {
                 reader.Read(temp, 0, nframes * pcmPacketSize);
                 for (int i = 0; i < nframes; i++)
