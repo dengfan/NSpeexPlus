@@ -211,14 +211,14 @@ namespace NSpeex
 		public override void WriteHeader(String comment)
 		{
 			// Writes the RIFF chunk indicating wave format
-            byte[] chkid = System.Text.Encoding.UTF8.GetBytes("RIFF");
+            byte[] chkid = System.Text.Encoding.Default.GetBytes("RIFF");
 			raf.Write(chkid, 0, chkid.Length);
 			raf.Write(0); /* total length must be blank */
-            chkid = System.Text.Encoding.UTF8.GetBytes("WAVE");
+            chkid = System.Text.Encoding.Default.GetBytes("WAVE");
 			raf.Write(chkid, 0, chkid.Length);
 
 			/* format subchunk: of size 16 */
-            chkid = System.Text.Encoding.UTF8.GetBytes("fmt ");
+            chkid = System.Text.Encoding.Default.GetBytes("fmt ");
 			raf.Write(chkid, 0, chkid.Length);
 			if (isPCM)
 			{
@@ -250,7 +250,7 @@ namespace NSpeex
 			}
 
 			/* write the start of data chunk */
-            chkid = System.Text.Encoding.UTF8.GetBytes("data");
+            chkid = System.Text.Encoding.Default.GetBytes("data");
 			raf.Write(chkid, 0, chkid.Length);
 			raf.Write(0);
 		}

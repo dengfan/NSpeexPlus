@@ -92,8 +92,8 @@ namespace NSpeex.Plus
             bool vbr,
             int nframes)
         {
-            buf.Write(System.Text.Encoding.UTF8.GetBytes("Speex   ")); // 0 - 7: speex_string
-            buf.Write(System.Text.Encoding.UTF8.GetBytes("speex-1.0")); // 8 - 27: speex_version
+            buf.Write(System.Text.Encoding.Default.GetBytes("Speex   ")); // 0 - 7: speex_string
+            buf.Write(System.Text.Encoding.Default.GetBytes("speex-1.0")); // 8 - 27: speex_version
             for (int i = 0; i < 11; i++)
                 buf.Write(Byte.MinValue); // (fill in up to 20 bytes)
             buf.Write(1); // 28 - 31: speex_version_id
@@ -137,7 +137,7 @@ namespace NSpeex.Plus
         {
             int length = comment.Length;
             buf.Write(length); // vendor comment size
-            buf.Write(System.Text.Encoding.UTF8.GetBytes(comment), 0, length); // vendor comment
+            buf.Write(System.Text.Encoding.Default.GetBytes(comment), 0, length); // vendor comment
             buf.Write(0); // user comment list length
             return length + 8;
         }
