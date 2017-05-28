@@ -103,7 +103,7 @@ namespace WpfDemo
 
                 if (isCancel == null || isCancel == false) // 发送或未取消
                 {
-                    // 为了演示压缩和解压的功能，这里先压缩wav为spx文件，再解压spx文件为wav文件，再插入数据
+                    // 为了演示压缩和解压的功能，这里先压缩原始wav为spx文件，再解压spx文件为wav文件，最后插入数据，UI自动更新
                     new NSpeexEnc().Encode(wavFilePath, (sfp) =>
                     {
                         new NSpeexDec().Decode(sfp, (wfp) =>
