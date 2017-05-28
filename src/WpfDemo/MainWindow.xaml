@@ -6,18 +6,21 @@
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:local="clr-namespace:WpfDemo"
         mc:Ignorable="d"
-        Title="WPF Demo For NSpeex Plus" Height="480" Width="640">
+        Title="WPF Demo For NSpeex Plus" Height="480" Width="640" MinWidth="360" MinHeight="320">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         
-        <ItemsControl>
+        <ItemsControl ItemsSource="{Binding SpxList}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Grid>
-                        <Border Background="AliceBlue" CornerRadius="18" Height="36" Width="{Binding Width}"></Border>
+                        <TextBlock Margin="8,4,0,0" Text="{Binding SpxFileName}" Foreground="Black"/>
+                        <Border Margin="8,24,0,8" Background="LightSkyBlue" CornerRadius="0,18,18,18" Height="36" Width="{Binding Width}" MinWidth="40" MaxWidth="320" HorizontalAlignment="Left">
+                            <TextBlock Margin="0,0,12,0" Text="{Binding SecondInfo}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White"/>
+                        </Border>
                     </Grid>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
@@ -26,7 +29,7 @@
         <StackPanel Grid.Row="1">
             <Border x:Name="borderRecordBar" BorderBrush="AntiqueWhite" BorderThickness="0,1,0,0" Visibility="Collapsed">
                 <Grid Height="36">
-                    <Border x:Name="borderProcess" Background="AliceBlue" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="76"/>
+                    <Border x:Name="borderProcess" Background="LightSkyBlue" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="76"/>
                     <Border Margin="16,0,0,0" Width="8" Height="8" CornerRadius="4" Background="Red" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <TextBlock Margin="40,0,0,0" Text="Recording..." VerticalAlignment="Center"/>
                     <Button x:Name="btnSend" Margin="0,0,80,0" HorizontalAlignment="Right" VerticalAlignment="Center" Width="64" Content="Send" Click="btnSend_Click"/>

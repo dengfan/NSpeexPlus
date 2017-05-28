@@ -15,8 +15,9 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using NSpeex.Plus;
 using System.IO;
-using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using System.Collections.ObjectModel;
+using NSpeex.Plus;
 
 namespace WpfDemo
 {
@@ -25,12 +26,17 @@ namespace WpfDemo
     /// </summary>
     public partial class MainWindow : Window
     {
-        private static WaveIn waveSource;
-        private static WaveFileWriter waveFile;
-        private static string dir = @"C:\Temp";
-        private string wavFilePath;
-        private string spxFilePath;
-        private DispatcherTimer dispatcherTimer;
+        static string dir = @"C:\Temp";
+        static WaveIn waveSource;
+        static WaveFileWriter waveFile;
+        static DispatcherTimer dispatcherTimer;
+        static double currentTicks = 0;
+        static readonly double interval = 60;
+        static readonly double totalTicks = 60000 / interval;
+        static MainViewModel vm;
+
+        string wavFilePath;
+        string spxFilePath;
 
         public MainWindow()
         {
@@ -40,11 +46,16 @@ namespace WpfDemo
             {
                 Directory.CreateDirectory(dir);
             }
+
+            vm = new MainViewModel()
+            {
+                SpxList = new ObservableCollection<SpxItemViewModel>()
+            };
+
+            DataContext = vm;
         }
 
-        static double currentTicks = 0;
-        static readonly double interval = 60;
-        static readonly double totalTicks = 60000 / interval;
+
         private void btnRecord_Click(object sender, RoutedEventArgs e)
         {
             borderRecordBar.Visibility = Visibility.Visible;
@@ -83,6 +94,18 @@ namespace WpfDemo
                     waveFile.Dispose();
                     waveFile = null;
                 }
+
+                // 压缩 wav 为 spx 文件
+                new NSpeexEnc().Encode(wavFilePath, (s) => {
+                    double seconds = 0;
+                    using (var wfr = new WaveFileReader(wavFilePath))
+                    {
+                        seconds = wfr.TotalTime.TotalSeconds;
+                    }
+
+                    vm.SpxList.Add(new SpxItemViewModel { TimeLength = seconds, SpxFilePath = s });
+                    File.Delete(wavFilePath);
+                });
             };
 
             wavFilePath = string.Format(@"{0}\{1}.wav", dir, DateTime.Now.ToString("yyyyMMddHHmmsss"));
@@ -94,12 +117,12 @@ namespace WpfDemo
 
         private void StopRecording()
         {
-            waveSource.StopRecording();
-
             currentTicks = 0;
             dispatcherTimer.Stop();
 
             borderRecordBar.Visibility = Visibility.Collapsed;
+
+            waveSource.StopRecording();
         }
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
