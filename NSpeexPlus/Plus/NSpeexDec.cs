@@ -163,7 +163,8 @@ namespace NSpeex.Plus
                         }
                     }
                     else if (packetNo == 1)
-                    { // Ogg Comment packet
+                    {
+                        // Ogg Comment packet
                         packetNo++;
                     }
                     else
@@ -184,6 +185,7 @@ namespace NSpeex.Plus
                                 speexDecoder.processData(false);
                             }
                         }
+
                         /* get the amount of decoded data */
                         if ((decsize = speexDecoder.getProcessedData(decdat, 0)) > 0)
                         {
@@ -196,7 +198,6 @@ namespace NSpeex.Plus
                     throw new IOException("Ogg CheckSums do not match");
             }
 
-            /* close the output file */
             reader.Close();
             writer.Close();
         }
