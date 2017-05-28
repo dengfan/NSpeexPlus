@@ -198,8 +198,13 @@ namespace NSpeex.Plus
                     throw new IOException("Ogg CheckSums do not match");
             }
 
-            reader.Close();
             writer.Close();
+            reader.Close();
+
+            if (callback != null)
+            {
+                callback.Invoke(destPath);
+            }
         }
 
         /**

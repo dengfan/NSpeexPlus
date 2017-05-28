@@ -27,9 +27,11 @@ namespace WpfDemo
     public partial class MainWindow : Window
     {
         static string dir = @"C:\Temp";
+        static WaveOutEvent wavePlayer;
         static WaveIn waveSource;
         static WaveFileWriter waveFile;
         static DispatcherTimer dispatcherTimer;
+        static bool? isCancel;
         static double currentTicks = 0;
         static readonly double interval = 60;
         static readonly double totalTicks = 60000 / interval;
@@ -58,6 +60,8 @@ namespace WpfDemo
 
         private void btnRecord_Click(object sender, RoutedEventArgs e)
         {
+            btnRecord.IsEnabled = false;
+
             borderRecordBar.Visibility = Visibility.Visible;
 
             dispatcherTimer = new DispatcherTimer();
@@ -95,17 +99,32 @@ namespace WpfDemo
                     waveFile = null;
                 }
 
-                // 压缩 wav 为 spx 文件
-                new NSpeexEnc().Encode(wavFilePath, (s) => {
-                    double seconds = 0;
-                    using (var wfr = new WaveFileReader(wavFilePath))
-                    {
-                        seconds = wfr.TotalTime.TotalSeconds;
-                    }
+                btnRecord.IsEnabled = true;
 
-                    vm.SpxList.Add(new SpxItemViewModel { TimeLength = seconds, SpxFilePath = s });
+                if (isCancel == null || isCancel == false) // 发送或未取消
+                {
+                    // 为了演示压缩和解压的功能，这里先压缩wav为spx文件，再解压spx文件为wav文件，再插入数据，最后删除原始的wav文件
+                    new NSpeexEnc().Encode(wavFilePath, (sfp) =>
+                    {
+                        new NSpeexDec().Decode(sfp, (wfp) =>
+                        {
+                            double seconds = 0;
+                            using (var wfr = new WaveFileReader(wavFilePath))
+                            {
+                                seconds = wfr.TotalTime.TotalSeconds;
+                            }
+
+                            vm.SpxList.Add(new SpxItemViewModel { TimeLength = seconds, EncodedSpxFilePath = sfp, DecodedWavFilePath = wfp });
+                            File.Delete(wavFilePath);
+
+                            scrollViewer1.ScrollToBottom();
+                        });
+                    });
+                }
+                else // 被取消
+                {
                     File.Delete(wavFilePath);
-                });
+                }
             };
 
             wavFilePath = string.Format(@"{0}\{1}.wav", dir, DateTime.Now.ToString("yyyyMMddHHmmsss"));
@@ -119,9 +138,7 @@ namespace WpfDemo
         {
             currentTicks = 0;
             dispatcherTimer.Stop();
-
             borderRecordBar.Visibility = Visibility.Collapsed;
-
             waveSource.StopRecording();
         }
 
@@ -138,11 +155,13 @@ namespace WpfDemo
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
+            isCancel = currentTicks < 20; // 录音时音过短
             StopRecording();
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
+            isCancel = true;
             StopRecording();
         }
 
@@ -180,6 +199,51 @@ namespace WpfDemo
             }
         }
 
+        private void SpeechItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var g = sender as Grid;
+            var vm = g.DataContext as SpxItemViewModel;
+            if (vm == null)
+            {
+                return;
+            }
 
+            if (wavePlayer != null)
+            {
+                wavePlayer.Stop();
+                wavePlayer.Dispose();
+            }
+
+            WaveStream wareStream = new WaveFileReader(vm.DecodedWavFilePath);
+            WaveChannel32 volumeStream = new WaveChannel32(wareStream);
+            wavePlayer = new WaveOutEvent();
+            wavePlayer.Init(volumeStream);
+            wavePlayer.Play();
+            wavePlayer.PlaybackStopped += (s2, e2) =>
+            {
+                var p = s2 as WaveOutEvent;
+                if (p != null)
+                {
+                    p.Stop();
+                    p.Dispose();
+
+                    volumeStream.Close();
+                    volumeStream.Dispose();
+
+                    wareStream.Close();
+                    wareStream.Dispose();
+                }
+            };
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+
+            if (wavePlayer != null)
+            {
+                wavePlayer.Dispose();
+            }
+        }
     }
 }

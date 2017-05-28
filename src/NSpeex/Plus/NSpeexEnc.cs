@@ -214,7 +214,7 @@ namespace NSpeex.Plus
 
             if (callback != null)
             {
-                callback(destPath);
+                callback.Invoke(destPath);
             }
         }
 

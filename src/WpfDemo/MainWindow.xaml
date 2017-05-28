@@ -12,19 +12,21 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
-        <ItemsControl ItemsSource="{Binding SpxList}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <TextBlock Margin="8,4,0,0" Text="{Binding SpxFileName}" Foreground="Black"/>
-                        <Border Margin="8,24,0,8" Background="LightSkyBlue" CornerRadius="0,18,18,18" Height="36" Width="{Binding Width}" MinWidth="40" MaxWidth="320" HorizontalAlignment="Left">
-                            <TextBlock Margin="0,0,12,0" Text="{Binding SecondInfo}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White"/>
-                        </Border>
-                    </Grid>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+
+        <ScrollViewer x:Name="scrollViewer1">
+            <ItemsControl ItemsSource="{Binding SpxList}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid MouseLeftButtonDown="SpeechItem_MouseLeftButtonDown">
+                            <TextBlock Margin="8,4,0,0" Text="{Binding SpxFileName}" Foreground="Black"/>
+                            <Border Margin="8,24,0,8" Background="LightSkyBlue" CornerRadius="0,18,18,18" Height="36" Width="{Binding Width}" MinWidth="40" MaxWidth="320" HorizontalAlignment="Left">
+                                <TextBlock Margin="0,0,12,0" Text="{Binding SecondInfo}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White"/>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
         
         <StackPanel Grid.Row="1">
             <Border x:Name="borderRecordBar" BorderBrush="AntiqueWhite" BorderThickness="0,1,0,0" Visibility="Collapsed">

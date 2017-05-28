@@ -14,12 +14,13 @@ namespace WpfDemo
     public class SpxItemViewModel
     {
         public double TimeLength { get; set; }
-        public string SpxFilePath { get; set; }
+        public string EncodedSpxFilePath { get; set; }
+        public string DecodedWavFilePath { get; set; }
         public string SpxFileName
         {
             get
             {
-                return SpxFilePath.Split('\\').Last().ToString();
+                return EncodedSpxFilePath.Split('\\').Last().ToString();
             }
         }
         public string SecondInfo
