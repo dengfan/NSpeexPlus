@@ -103,7 +103,7 @@ namespace WpfDemo
 
                 if (isCancel == null || isCancel == false) // 发送或未取消
                 {
-                    // 为了演示压缩和解压的功能，这里先压缩wav为spx文件，再解压spx文件为wav文件，再插入数据，最后删除原始的wav文件
+                    // 为了演示压缩和解压的功能，这里先压缩wav为spx文件，再解压spx文件为wav文件，再插入数据
                     new NSpeexEnc().Encode(wavFilePath, (sfp) =>
                     {
                         new NSpeexDec().Decode(sfp, (wfp) =>
@@ -115,7 +115,6 @@ namespace WpfDemo
                             }
 
                             vm.SpxList.Add(new SpxItemViewModel { TimeLength = seconds, EncodedSpxFilePath = sfp, DecodedWavFilePath = wfp });
-                            File.Delete(wavFilePath);
 
                             scrollViewer1.ScrollToBottom();
                         });
