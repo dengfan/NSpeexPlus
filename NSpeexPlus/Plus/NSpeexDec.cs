@@ -137,7 +137,7 @@ namespace NSpeex.Plus
             int chksum;
 
             // read until we get to EOF
-            while (reader.BaseStream.Position != reader.BaseStream.Length)
+            while (reader.BaseStream.Length - reader.BaseStream.Position > 0)
             {
                 if (srcFormat == FILE_FORMAT_OGG)
                 {
@@ -180,7 +180,7 @@ namespace NSpeex.Plus
                         /* if first packet, read the Speex header */
                         if (packetNo == 0)
                         {
-                            if (readSpeexHeader(payload, 0, bodybytes))
+                            if (ReadSpeexHeader(payload, 0, bodybytes))
                             {
 
                                 /* once Speex header read, initialize the wave writer with output format */
@@ -293,7 +293,7 @@ namespace NSpeex.Plus
                                         Console.WriteLine("Possibly corrupt Speex Wave file.");
                                         return;
                                     }
-                                    readSpeexHeader(header, 20, 80);
+                                    ReadSpeexHeader(header, 20, 80);
                                 }
                                 reader.Read(header, 0, WAV_HEADERSIZE);
                                 chunk = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
@@ -311,19 +311,17 @@ namespace NSpeex.Plus
                                 switch (mode)
                                 {
                                     case 0:
-                                        bodybytes = NbEncoder.NB_FRAME_SIZE[NbEncoder.NB_QUALITY_MAP[quality]];
+                                        bodybytes = NbCodec.NB_FRAME_SIZE[NbEncoder.NB_QUALITY_MAP[quality]];
                                         break;
-                                    //Wideband
                                     case 1:
-                                        bodybytes = SbEncoder.NB_FRAME_SIZE[SbEncoder.NB_QUALITY_MAP[quality]];
-                                        bodybytes += SbEncoder.SB_FRAME_SIZE[SbEncoder.WB_QUALITY_MAP[quality]];
+                                        bodybytes = NbCodec.NB_FRAME_SIZE[SbEncoder.NB_QUALITY_MAP[quality]];
+                                        bodybytes += SbCodec.SB_FRAME_SIZE[SbEncoder.WB_QUALITY_MAP[quality]];
                                         break;
                                     case 2:
-                                        bodybytes = SbEncoder.NB_FRAME_SIZE[SbEncoder.NB_QUALITY_MAP[quality]];
-                                        bodybytes += SbEncoder.SB_FRAME_SIZE[SbEncoder.WB_QUALITY_MAP[quality]];
-                                        bodybytes += SbEncoder.SB_FRAME_SIZE[SbEncoder.UWB_QUALITY_MAP[quality]];
+                                        bodybytes = NbCodec.NB_FRAME_SIZE[SbEncoder.NB_QUALITY_MAP[quality]];
+                                        bodybytes += SbCodec.SB_FRAME_SIZE[SbEncoder.WB_QUALITY_MAP[quality]];
+                                        bodybytes += SbCodec.SB_FRAME_SIZE[SbEncoder.UWB_QUALITY_MAP[quality]];
                                         break;
-                                    //*/
                                     default:
                                         throw new IOException("Illegal mode encoundered.");
                                 }
@@ -408,15 +406,15 @@ namespace NSpeex.Plus
          * @param bytes
          * @return
          */
-        private bool readSpeexHeader(byte[] packet,
+        private bool ReadSpeexHeader(byte[] packet,
                                         int offset,
                                         int bytes)
         {
             if (bytes != 80)
             {
-                Console.WriteLine("Oooops");
                 return false;
             }
+
             string oggId = Encoding.Default.GetString(packet.Skip(offset).Take(8).ToArray());
             if (!"Speex   ".Equals(oggId))
             {
