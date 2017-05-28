@@ -173,7 +173,7 @@ public class JSpeexDec
   public static void main(String[] args)
     throws IOException
   {
-      args = new String[]{"C:\\Temp\\j20170528104132.wav.spx","C:\\Temp\\j20170528104132.wav.spx.wav"};
+      args = new String[]{"C:\\Temp\\j20170528125210.wav.spx","C:\\Temp\\j20170528125210.wav.spx.wav"};
     JSpeexDec decoder = new JSpeexDec();
     if (decoder.parseArgs(args)) {
       decoder.decode();

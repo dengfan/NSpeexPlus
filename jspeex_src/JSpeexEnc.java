@@ -159,7 +159,7 @@ public class JSpeexEnc
   public static void main(String[] args)
     throws IOException
   {
-      args = new String[]{"C:\\Temp\\20170528104132.wav","C:\\Temp\\j20170528104132.wav.spx"};
+      args = new String[]{"C:\\Temp\\20170528125210.wav","C:\\Temp\\j20170528125210.wav.spx"};
     JSpeexEnc encoder = new JSpeexEnc();
     if (encoder.parseArgs(args)) {
       encoder.encode();

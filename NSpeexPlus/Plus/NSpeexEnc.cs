@@ -218,30 +218,18 @@ namespace NSpeex.Plus
             }
         }
 
-        /**
-         * Converts Little Endian (Windows) bytes to an int (Java uses Big Endian).
-         * @param data the data to read.
-         * @param offset the offset from which to start reading.
-         * @return the integer value of the reassembled bytes.
-         */
         protected static int ReadInt(byte[] data, int offset)
         {
-            return (data[offset] & 0xff) |
-                   ((data[offset + 1] & 0xff) << 8) |
-                   ((data[offset + 2] & 0xff) << 16) |
-                   (data[offset + 3] << 24); // no 0xff on the last one to keep the sign
+            var reader = new BinaryReader(new MemoryStream(data));
+            reader.BaseStream.Seek(offset, SeekOrigin.Begin);
+            return reader.ReadInt32();
         }
 
-        /**
-         * Converts Little Endian (Windows) bytes to an short (Java uses Big Endian).
-         * @param data the data to read.
-         * @param offset the offset from which to start reading.
-         * @return the integer value of the reassembled bytes.
-         */
         protected static int ReadShort(byte[] data, int offset)
         {
-            return (data[offset] & 0xff) |
-                   (data[offset + 1] << 8); // no 0xff on the last one to keep the sign
+            var reader = new BinaryReader(new MemoryStream(data));
+            reader.BaseStream.Seek(offset, SeekOrigin.Begin);
+            return reader.ReadInt16();
         }
     }
 

@@ -122,7 +122,7 @@ namespace WpfDemo
             if (result == true)
             {
                 string filename = dlg.FileName;
-                new NSpeexDec(PrintLevel.Debug).Decode(filename, filename + ".wav");
+                new NSpeexDec(PrintLevel.Debug).Decode(filename, null);
             }
         }
     }
