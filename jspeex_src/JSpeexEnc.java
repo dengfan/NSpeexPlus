@@ -100,7 +100,7 @@ public class JSpeexEnc
   /** Print level for messages : Print only errors */
   public static final int ERROR = 3;
   /** Print level for messages */
-  protected int printlevel = INFO;
+  protected int printlevel = DEBUG;
 
   /** File format for input or output audio file: Raw */
   public static final int FILE_FORMAT_RAW  = 0;
@@ -159,7 +159,7 @@ public class JSpeexEnc
   public static void main(String[] args)
     throws IOException
   {
-      args = new String[]{"C:\\Temp\\20170526230839.wav","C:\\Temp\\j320170526230839.wav.spx"};
+      args = new String[]{"C:\\Temp\\20170528104132.wav","C:\\Temp\\j20170528104132.wav.spx"};
     JSpeexEnc encoder = new JSpeexEnc();
     if (encoder.parseArgs(args)) {
       encoder.encode();
@@ -504,6 +504,7 @@ public class JSpeexEnc
     writer.open(destPath);
     writer.writeHeader("Encoded with: " + VERSION);
     int pcmPacketSize = 2 * channels * speexEncoder.getFrameSize();
+    int c=0;
     try {
       // read until we get to EOF
       while (true) {
@@ -513,12 +514,14 @@ public class JSpeexEnc
         int encsize = speexEncoder.getProcessedData(temp, 0);
         if (encsize > 0) {
           writer.writePacket(temp, 0, encsize);
+          c++;
         }
       }
     }
     catch (EOFException e) {}
     writer.close(); 
     dis.close();
+    System.out.println("----->" + c);
   }
   
   /**
