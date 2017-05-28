@@ -3,28 +3,72 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:local="clr-namespace:WpfDemo"
         mc:Ignorable="d"
-        Title="NSpeex Plus" Height="160" Width="320">
-    <Grid Margin="4">
-        <Grid.Resources>
-            <Style TargetType="Button">
-                <Setter Property="Margin" Value="4"/>
-                <Setter Property="VerticalAlignment" Value="Top"/>
-                <Setter Property="Height" Value="48"/>
-            </Style>
-        </Grid.Resources>
+        Title="WPF Demo For NSpeex Plus" Height="480" Width="640">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <Button Grid.Row="0" Grid.Column="0" x:Name="btnStart" Content="Start Record" Click="btnStart_Click"/>
-        <Button Grid.Row="0" Grid.Column="1" x:Name="btnStop" Content="Stop Record" Click="btnStop_Click"/>
-        <Button Grid.Row="1" Grid.Column="0" x:Name="btnWav2Spx" Content="Wav To Spx" Click="btnWav2Spx_Click"/>
-        <Button Grid.Row="1" Grid.Column="1" x:Name="btnSpx2Wav" Content="Spx To Wav" Click="btnSpx2Wav_Click"/>
+        
+        <ItemsControl>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Border Background="AliceBlue" CornerRadius="18" Height="36" Width="{Binding Width}"></Border>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        
+        <StackPanel Grid.Row="1">
+            <Border x:Name="borderRecordBar" BorderBrush="AntiqueWhite" BorderThickness="0,1,0,0" Visibility="Collapsed">
+                <Grid Height="36">
+                    <Border x:Name="borderProcess" Background="AliceBlue" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="76"/>
+                    <Border Margin="16,0,0,0" Width="8" Height="8" CornerRadius="4" Background="Red" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <TextBlock Margin="40,0,0,0" Text="Recording..." VerticalAlignment="Center"/>
+                    <Button x:Name="btnSend" Margin="0,0,80,0" HorizontalAlignment="Right" VerticalAlignment="Center" Width="64" Content="Send" Click="btnSend_Click"/>
+                    <Button x:Name="btnCancel" Margin="0,0,8,0" HorizontalAlignment="Right" VerticalAlignment="Center" Width="64" Content="Cancel" Click="btnCancel_Click"/>
+                </Grid>
+            </Border>
+
+            <Border BorderBrush="AntiqueWhite" BorderThickness="0,1,0,0">
+                <Button x:Name="btnRecord" Margin="12" Click="btnRecord_Click" HorizontalAlignment="Center">
+                    <Button.Template>
+                        <ControlTemplate>
+                            <Border Width="48" Height="48" CornerRadius="24" Background="LightGreen">
+                                <fa:ImageAwesome Icon="Wifi" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Foreground="White">
+                                    <fa:ImageAwesome.RenderTransform>
+                                        <RotateTransform Angle="90"/>
+                                    </fa:ImageAwesome.RenderTransform>
+                                </fa:ImageAwesome>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </Border>
+
+            <Grid Margin="4" Visibility="Collapsed">
+                <Grid.Resources>
+                    <Style TargetType="Button">
+                        <Setter Property="Margin" Value="4"/>
+                        <Setter Property="VerticalAlignment" Value="Top"/>
+                        <Setter Property="Height" Value="48"/>
+                    </Style>
+                </Grid.Resources>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Row="1" Grid.Column="0" x:Name="btnWav2Spx" Content="Wav To Spx" Click="btnWav2Spx_Click"/>
+                <Button Grid.Row="1" Grid.Column="1" x:Name="btnSpx2Wav" Content="Spx To Wav" Click="btnSpx2Wav_Click"/>
+            </Grid>
+        </StackPanel>
     </Grid>
 </Window>

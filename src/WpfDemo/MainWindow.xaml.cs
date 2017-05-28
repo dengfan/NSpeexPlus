@@ -15,6 +15,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using NSpeex.Plus;
 using System.IO;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace WpfDemo
 {
@@ -28,6 +30,7 @@ namespace WpfDemo
         private static string dir = @"C:\Temp";
         private string wavFilePath;
         private string spxFilePath;
+        private DispatcherTimer dispatcherTimer;
 
         public MainWindow()
         {
@@ -39,18 +42,48 @@ namespace WpfDemo
             }
         }
 
-        private void btnStart_Click(object sender, RoutedEventArgs e)
+        static double currentTicks = 0;
+        static readonly double interval = 60;
+        static readonly double totalTicks = 60000 / interval;
+        private void btnRecord_Click(object sender, RoutedEventArgs e)
         {
-            btnStart.IsEnabled = false;
-            btnStop.IsEnabled = true;
+            borderRecordBar.Visibility = Visibility.Visible;
+
+            dispatcherTimer = new DispatcherTimer();
+            dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
+            dispatcherTimer.Interval = TimeSpan.FromMilliseconds(interval);
+            dispatcherTimer.Start();
+            borderProcess.Width = 0;
+            currentTicks = 0;
 
             waveSource = new WaveIn()
             {
                 WaveFormat = new WaveFormat(8000, 1)
             };
 
-            waveSource.DataAvailable += new EventHandler<WaveInEventArgs>(WaveSource_DataAvailable);
-            waveSource.RecordingStopped += new EventHandler<StoppedEventArgs>(WaveSource_RecordingStopped);
+            waveSource.DataAvailable += (s2, e2) =>
+            {
+                if (waveFile != null)
+                {
+                    waveFile.Write(e2.Buffer, 0, e2.BytesRecorded);
+                    waveFile.Flush();
+                }
+            };
+
+            waveSource.RecordingStopped += (s3, e3) =>
+            {
+                if (waveSource != null)
+                {
+                    waveSource.Dispose();
+                    waveSource = null;
+                }
+
+                if (waveFile != null)
+                {
+                    waveFile.Dispose();
+                    waveFile = null;
+                }
+            };
 
             wavFilePath = string.Format(@"{0}\{1}.wav", dir, DateTime.Now.ToString("yyyyMMddHHmmsss"));
             spxFilePath = wavFilePath + ".spx";
@@ -59,37 +92,35 @@ namespace WpfDemo
             waveSource.StartRecording();
         }
 
-        void WaveSource_DataAvailable(object sender, WaveInEventArgs e)
+        private void StopRecording()
         {
-            if (waveFile != null)
-            {
-                waveFile.Write(e.Buffer, 0, e.BytesRecorded);
-                waveFile.Flush();
-            }
-        }
-
-        void WaveSource_RecordingStopped(object sender, StoppedEventArgs e)
-        {
-            if (waveSource != null)
-            {
-                waveSource.Dispose();
-                waveSource = null;
-            }
-
-            if (waveFile != null)
-            {
-                waveFile.Dispose();
-                waveFile = null;
-            }
-
-            btnStart.IsEnabled = true;
-        }
-
-        private void btnStop_Click(object sender, RoutedEventArgs e)
-        {
-            btnStop.IsEnabled = false;
-
             waveSource.StopRecording();
+
+            currentTicks = 0;
+            dispatcherTimer.Stop();
+
+            borderRecordBar.Visibility = Visibility.Collapsed;
+        }
+
+        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            if (currentTicks - totalTicks >= 5)
+            {
+                StopRecording();
+                return;
+            }
+
+            borderProcess.Width = (ActualWidth / totalTicks) * ++currentTicks;
+        }
+
+        private void btnSend_Click(object sender, RoutedEventArgs e)
+        {
+            StopRecording();
+        }
+
+        private void btnCancel_Click(object sender, RoutedEventArgs e)
+        {
+            StopRecording();
         }
 
         private void btnWav2Spx_Click(object sender, RoutedEventArgs e)
@@ -125,5 +156,7 @@ namespace WpfDemo
                 new NSpeexDec(PrintLevel.Debug).Decode(filename, null);
             }
         }
+
+
     }
 }
