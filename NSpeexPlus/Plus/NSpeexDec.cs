@@ -6,6 +6,14 @@ using System.Text;
 
 namespace NSpeex.Plus
 {
+    public enum PrintLevel
+    {
+        Debug,
+        Info,
+        Warn,
+        Error
+    }
+
     /**
      * Java Speex Command Line Decoder.
      * 
@@ -25,16 +33,8 @@ namespace NSpeex.Plus
      */
     public class NSpeexDec
     {
-        /** Print level for messages : Print debug information */
-        public static readonly int DEBUG = 0;
-        /** Print level for messages : Print basic information */
-        public static readonly int INFO = 1;
-        /** Print level for messages : Print only warnings and errors */
-        public static readonly int WARN = 2;
-        /** Print level for messages : Print only errors */
-        public static readonly int ERROR = 3;
         /** Print level for messages */
-        protected int printlevel = INFO;
+        protected PrintLevel printlevel = PrintLevel.Info;
 
         /** File format for input or output audio file: Raw */
         public static readonly int FILE_FORMAT_RAW = 0;
@@ -75,7 +75,7 @@ namespace NSpeex.Plus
         {
         }
 
-        public NSpeexDec(int printlevel)
+        public NSpeexDec(PrintLevel printlevel)
         {
             this.printlevel = printlevel;
         }
@@ -86,7 +86,7 @@ namespace NSpeex.Plus
          * @param destPath
          * @exception IOException
          */
-        public void decode(string srcPath, string destPath)
+        public void Decode(string srcPath, string destPath)
         {
             if (srcPath.ToLower().EndsWith(".spx"))
             {
@@ -143,7 +143,7 @@ namespace NSpeex.Plus
                 {
                     // read the OGG header
                     reader.Read(header, 0, OGG_HEADERSIZE);
-                    origchksum = readInt(header, 22);
+                    origchksum = ReadInt(header, 22);
                     header[22] = 0;
                     header[23] = 0;
                     header[24] = 0;
@@ -256,7 +256,7 @@ namespace NSpeex.Plus
                             // Read other header chunks
                             reader.Read(header, 0, WAV_HEADERSIZE);
                             String chunk = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
-                            int size = readInt(header, 4);
+                            int size = ReadInt(header, 4);
                             while (!chunk.Equals(DATA))
                             {
                                 reader.Read(header, 0, size);
@@ -273,14 +273,14 @@ namespace NSpeex.Plus
                                     WORD cbSize; // The count in bytes of the extra size 
                                     } WAVEFORMATEX;
                                     */
-                                    if (readShort(header, 0) != WAVE_FORMAT_SPEEX)
+                                    if (ReadShort(header, 0) != WAVE_FORMAT_SPEEX)
                                     {
                                         Console.WriteLine("Not a Wave Speex file");
                                         return;
                                     }
-                                    channels = readShort(header, 2);
-                                    sampleRate = readInt(header, 4);
-                                    bodybytes = readShort(header, 12);
+                                    channels = ReadShort(header, 2);
+                                    sampleRate = ReadInt(header, 4);
+                                    bodybytes = ReadShort(header, 12);
                                     /*
                                     The extra data in the wave format are
                                     18 : ACM major version number
@@ -288,7 +288,7 @@ namespace NSpeex.Plus
                                     20-100 : Speex header
                                     100-... : Comment ?
                                     */
-                                    if (readShort(header, 16) < 82)
+                                    if (ReadShort(header, 16) < 82)
                                     {
                                         Console.WriteLine("Possibly corrupt Speex Wave file.");
                                         return;
@@ -297,9 +297,9 @@ namespace NSpeex.Plus
                                 }
                                 reader.Read(header, 0, WAV_HEADERSIZE);
                                 chunk = Encoding.Default.GetString(header.Skip(0).Take(4).ToArray());
-                                size = readInt(header, 4);
+                                size = ReadInt(header, 4);
                             }
-                            if (printlevel <= DEBUG) Console.WriteLine("Data size: " + size);
+                            if (printlevel <= PrintLevel.Debug) Console.WriteLine("Data size: " + size);
                         }
                         else
                         {
@@ -421,9 +421,9 @@ namespace NSpeex.Plus
                 return false;
             }
             mode = packet[40 + offset] & 0xFF;
-            sampleRate = readInt(packet, offset + 36);
-            channels = readInt(packet, offset + 48);
-            nframes = readInt(packet, offset + 64);
+            sampleRate = ReadInt(packet, offset + 36);
+            channels = ReadInt(packet, offset + 48);
+            nframes = ReadInt(packet, offset + 64);
             return speexDecoder.init(mode, sampleRate, channels, enhanced);
         }
 
@@ -433,7 +433,7 @@ namespace NSpeex.Plus
          * @param offset the offset from which to start reading.
          * @return the integer value of the reassembled bytes.
          */
-        protected static int readInt(byte[] data, int offset)
+        protected static int ReadInt(byte[] data, int offset)
         {
             return (data[offset] & 0xff) |
                    ((data[offset + 1] & 0xff) << 8) |
@@ -447,7 +447,7 @@ namespace NSpeex.Plus
          * @param offset the offset from which to start reading.
          * @return the integer value of the reassembled bytes.
          */
-        protected static int readShort(byte[] data, int offset)
+        protected static int ReadShort(byte[] data, int offset)
         {
             return (data[offset] & 0xff) |
                    (data[offset + 1] << 8); // no 0xff on the last one to keep the sign

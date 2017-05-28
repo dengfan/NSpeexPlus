@@ -17,18 +17,10 @@ namespace NSpeex.Plus
     public class NSpeexEnc
     {
         /** Version of the Speex Encoder */
-        public const String VERSION = "github.com/dengfan/NSpeexPlus";
+        public const String Github = @"https://github.com/dengfan/NSpeexPlus";
 
-        /** Print level for messages : Print debug information */
-        public static readonly int DEBUG = 0;
-        /** Print level for messages : Print basic information */
-        public static readonly int INFO = 1;
-        /** Print level for messages : Print only warnings and errors */
-        public static readonly int WARN = 2;
-        /** Print level for messages : Print only errors */
-        public static readonly int ERROR = 3;
         /** Print level for messages */
-        protected int printlevel = DEBUG;
+        protected PrintLevel printlevel = PrintLevel.Info;
 
         /** File format for input or output audio file: Raw */
         public static readonly int FILE_FORMAT_RAW = 0;
@@ -68,7 +60,7 @@ namespace NSpeex.Plus
         {
         }
 
-        public NSpeexEnc(int printlevel)
+        public NSpeexEnc(PrintLevel printlevel)
         {
             this.printlevel = printlevel;
         }
@@ -79,7 +71,7 @@ namespace NSpeex.Plus
          * @param destPath
          * @exception IOException
          */
-        public void encode(string srcPath, string destPath)
+        public void Encode(string srcPath, string destPath)
         {
             if (srcPath.ToLower().EndsWith(".wav"))
             {
@@ -129,7 +121,7 @@ namespace NSpeex.Plus
                 // Read other header chunks
                 reader.Read(temp, 0, HEADERSIZE);
                 String chunk = Encoding.Default.GetString(temp.Skip(0).Take(4).ToArray());
-                int size = readInt(temp, 4);
+                int size = ReadInt(temp, 4);
                 while (!chunk.Equals(DATA))
                 {
                     reader.Read(temp, 0, size);
@@ -146,25 +138,25 @@ namespace NSpeex.Plus
                         WORD cbSize; // The count in bytes of the extra size 
                         } WAVEFORMATEX;
                         */
-                        if (readShort(temp, 0) != WAVE_FORMAT_PCM)
+                        if (ReadShort(temp, 0) != WAVE_FORMAT_PCM)
                         {
                             Console.WriteLine("Not a PCM file");
                             return;
                         }
-                        channels = readShort(temp, 2);
-                        sampleRate = readInt(temp, 4);
-                        if (readShort(temp, 14) != 16)
+                        channels = ReadShort(temp, 2);
+                        sampleRate = ReadInt(temp, 4);
+                        if (ReadShort(temp, 14) != 16)
                         {
-                            Console.WriteLine("Not a 16 bit file " + readShort(temp, 18));
+                            Console.WriteLine("Not a 16 bit file " + ReadShort(temp, 18));
                             return;
                         }
 
                     }
                     reader.Read(temp, 0, HEADERSIZE);
                     chunk = Encoding.Default.GetString(temp.Skip(0).Take(4).ToArray());
-                    size = readInt(temp, 4);
+                    size = ReadInt(temp, 4);
                 }
-                if (printlevel <= DEBUG) Console.WriteLine("Data size: " + size);
+                if (printlevel <= PrintLevel.Debug) Console.WriteLine("Data size: " + size);
             }
             else
             {
@@ -230,7 +222,7 @@ namespace NSpeex.Plus
             }
 
             // Display info
-            if (printlevel <= DEBUG)
+            if (printlevel <= PrintLevel.Debug)
             {
                 Console.WriteLine("");
                 Console.WriteLine("Output File: " + destPath);
@@ -262,7 +254,7 @@ namespace NSpeex.Plus
                 return;
             }
             writer.Open(destPath);
-            writer.WriteHeader(VERSION);
+            writer.WriteHeader(Github);
             int pcmPacketSize = 2 * channels * speexEncoder.getFrameSize();
 
             int c = 0;
@@ -282,7 +274,8 @@ namespace NSpeex.Plus
 
             writer.Close();
             reader.Close();
-            if (printlevel <= DEBUG)
+
+            if (printlevel <= PrintLevel.Debug)
             {
                 Console.WriteLine("----->" + c);
             }
@@ -294,7 +287,7 @@ namespace NSpeex.Plus
          * @param offset the offset from which to start reading.
          * @return the integer value of the reassembled bytes.
          */
-        protected static int readInt(byte[] data, int offset)
+        protected static int ReadInt(byte[] data, int offset)
         {
             return (data[offset] & 0xff) |
                    ((data[offset + 1] & 0xff) << 8) |
@@ -308,7 +301,7 @@ namespace NSpeex.Plus
          * @param offset the offset from which to start reading.
          * @return the integer value of the reassembled bytes.
          */
-        protected static int readShort(byte[] data, int offset)
+        protected static int ReadShort(byte[] data, int offset)
         {
             return (data[offset] & 0xff) |
                    (data[offset + 1] << 8); // no 0xff on the last one to keep the sign
