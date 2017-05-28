@@ -194,7 +194,7 @@ namespace NSpeex.Plus
                 int headerType, long granulepos, int streamSerialNumber,
                 int pageCount, int packetCount, byte[] packetSizes)
         {
-            buf.Write(System.Text.Encoding.UTF8.GetBytes("OggS")); // 0 - 3: capture_pattern
+            buf.Write(System.Text.Encoding.Default.GetBytes("OggS")); // 0 - 3: capture_pattern
             buf.Write(Byte.MinValue); // 4: stream_structure_version
             buf.Write((byte)headerType); // 5: header_type_flag
             buf.Write(granulepos); // 6 - 13: absolute granule
