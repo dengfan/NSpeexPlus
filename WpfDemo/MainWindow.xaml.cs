@@ -37,11 +37,13 @@ namespace WpfDemo
             btnStart.IsEnabled = false;
             btnStop.IsEnabled = true;
 
-            waveSource = new WaveIn();
-            waveSource.WaveFormat = new WaveFormat(8000, 1);
+            waveSource = new WaveIn()
+            {
+                WaveFormat = new WaveFormat(8000, 1)
+            };
 
-            waveSource.DataAvailable += new EventHandler<WaveInEventArgs>(waveSource_DataAvailable);
-            waveSource.RecordingStopped += new EventHandler<StoppedEventArgs>(waveSource_RecordingStopped);
+            waveSource.DataAvailable += new EventHandler<WaveInEventArgs>(WaveSource_DataAvailable);
+            waveSource.RecordingStopped += new EventHandler<StoppedEventArgs>(WaveSource_RecordingStopped);
 
             wavFilePath = string.Format(@"C:\Temp\{0}.wav", DateTime.Now.ToString("yyyyMMddHHmmsss"));
             spxFilePath = wavFilePath + ".spx";
@@ -60,16 +62,16 @@ namespace WpfDemo
         private void btnWav2Spx_Click(object sender, RoutedEventArgs e)
         {
             wavFilePath = @"C:\Temp\20170528104132.wav";
-            new NSpeexEnc().Encode(wavFilePath, wavFilePath + ".spx");
+            new NSpeexEnc(PrintLevel.Debug).Encode(wavFilePath, wavFilePath + ".spx");
         }
 
         private void btnSpx2Wav_Click(object sender, RoutedEventArgs e)
         {
             spxFilePath = @"C:\Temp\20170528104132.wav.spx";
-            new NSpeexDec().Decode(spxFilePath, spxFilePath + ".wav");
+            new NSpeexDec(PrintLevel.Debug).Decode(spxFilePath, spxFilePath + ".wav");
         }
 
-        void waveSource_DataAvailable(object sender, WaveInEventArgs e)
+        void WaveSource_DataAvailable(object sender, WaveInEventArgs e)
         {
             if (waveFile != null)
             {
@@ -78,7 +80,7 @@ namespace WpfDemo
             }
         }
 
-        void waveSource_RecordingStopped(object sender, StoppedEventArgs e)
+        void WaveSource_RecordingStopped(object sender, StoppedEventArgs e)
         {
             if (waveSource != null)
             {
