@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using NSpeex.Plus;
+using System.IO;
 
 namespace WpfDemo
 {
@@ -22,14 +23,20 @@ namespace WpfDemo
     /// </summary>
     public partial class MainWindow : Window
     {
-        private WaveIn waveSource;
-        private WaveFileWriter waveFile;
+        private static WaveIn waveSource;
+        private static WaveFileWriter waveFile;
+        private static string dir = @"C:\Temp";
         private string wavFilePath;
         private string spxFilePath;
 
         public MainWindow()
         {
             InitializeComponent();
+
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
         }
 
         private void btnStart_Click(object sender, RoutedEventArgs e)
@@ -45,30 +52,11 @@ namespace WpfDemo
             waveSource.DataAvailable += new EventHandler<WaveInEventArgs>(WaveSource_DataAvailable);
             waveSource.RecordingStopped += new EventHandler<StoppedEventArgs>(WaveSource_RecordingStopped);
 
-            wavFilePath = string.Format(@"C:\Temp\{0}.wav", DateTime.Now.ToString("yyyyMMddHHmmsss"));
+            wavFilePath = string.Format(@"{0}\{1}.wav", dir, DateTime.Now.ToString("yyyyMMddHHmmsss"));
             spxFilePath = wavFilePath + ".spx";
             waveFile = new WaveFileWriter(wavFilePath, waveSource.WaveFormat);
 
             waveSource.StartRecording();
-        }
-
-        private void btnStop_Click(object sender, RoutedEventArgs e)
-        {
-            btnStop.IsEnabled = false;
-
-            waveSource.StopRecording();
-        }
-
-        private void btnWav2Spx_Click(object sender, RoutedEventArgs e)
-        {
-            wavFilePath = @"C:\Temp\20170528104132.wav";
-            new NSpeexEnc(PrintLevel.Debug).Encode(wavFilePath, wavFilePath + ".spx");
-        }
-
-        private void btnSpx2Wav_Click(object sender, RoutedEventArgs e)
-        {
-            spxFilePath = @"C:\Temp\20170528104132.wav.spx";
-            new NSpeexDec(PrintLevel.Debug).Decode(spxFilePath, spxFilePath + ".wav");
         }
 
         void WaveSource_DataAvailable(object sender, WaveInEventArgs e)
@@ -95,6 +83,47 @@ namespace WpfDemo
             }
 
             btnStart.IsEnabled = true;
+        }
+
+        private void btnStop_Click(object sender, RoutedEventArgs e)
+        {
+            btnStop.IsEnabled = false;
+
+            waveSource.StopRecording();
+        }
+
+        private void btnWav2Spx_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog()
+            {
+                InitialDirectory = dir,
+                DefaultExt = ".wav",
+                Filter = "WAVE Files (*.wav)|*.wav"
+            };
+
+            bool? result = dlg.ShowDialog();
+            if (result == true)
+            {
+                string filename = dlg.FileName;
+                new NSpeexEnc(PrintLevel.Debug).Encode(filename, null);
+            }
+        }
+
+        private void btnSpx2Wav_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog()
+            {
+                InitialDirectory = dir,
+                DefaultExt = ".spx",
+                Filter = "Ogg Speex Files (*.spx)|*.spx"
+            };
+
+            bool? result = dlg.ShowDialog();
+            if (result == true)
+            {
+                string filename = dlg.FileName;
+                new NSpeexDec(PrintLevel.Debug).Decode(filename, filename + ".wav");
+            }
         }
     }
 }
