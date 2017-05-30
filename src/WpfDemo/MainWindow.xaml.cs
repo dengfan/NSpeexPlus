@@ -31,6 +31,7 @@ namespace WpfDemo
         static WaveIn waveSource;
         static WaveFileWriter waveFile;
         static DispatcherTimer dispatcherTimer;
+        static SpxItemViewModel recordingItem;
         static bool? isCancel;
         static double currentTicks = 0;
         static readonly double interval = 60;
@@ -60,6 +61,13 @@ namespace WpfDemo
 
         private void btnRecord_Click(object sender, RoutedEventArgs e)
         {
+            // 录音开始时，强制关闭已有的播放
+            if (wavePlayer != null)
+            {
+                wavePlayer.Stop();
+                wavePlayer.Dispose();
+            }
+
             btnRecord.IsEnabled = false;
 
             borderRecordBar.Visibility = Visibility.Visible;
@@ -114,7 +122,10 @@ namespace WpfDemo
                                 seconds = wfr.TotalTime.TotalSeconds;
                             }
 
-                            vm.SpxList.Add(new SpxItemViewModel { TimeLength = seconds, EncodedSpxFilePath = sfp, DecodedWavFilePath = wfp });
+                            // 本次录音完成，更新数据并自动刷新UI
+                            recordingItem.TimeLength = seconds;
+                            recordingItem.EncodedSpxFilePath = sfp;
+                            recordingItem.DecodedWavFilePath = wfp;
 
                             scrollViewer1.ScrollToBottom();
                         });
@@ -122,13 +133,23 @@ namespace WpfDemo
                 }
                 else // 被取消
                 {
+                    if (recordingItem != null)
+                    {
+                        vm.SpxList.Remove(recordingItem);
+                    }
+                    
                     File.Delete(wavFilePath);
                 }
             };
 
-            wavFilePath = string.Format(@"{0}\{1}.wav", dir, DateTime.Now.ToString("yyyyMMddHHmmsss"));
+            string dateTimeStr = DateTime.Now.ToString("yyyyMMddHHmmsss");
+            wavFilePath = string.Format(@"{0}\{1}.wav", dir, dateTimeStr);
             spxFilePath = wavFilePath + ".spx";
             waveFile = new WaveFileWriter(wavFilePath, waveSource.WaveFormat);
+
+            // 录音中的占位项
+            recordingItem = new SpxItemViewModel { TimeLength = 1, EncodedSpxFilePath = string.Format("{0}.wav.spx is recording...", dateTimeStr), DecodedWavFilePath = null };
+            vm.SpxList.Add(recordingItem);
 
             waveSource.StartRecording();
         }
@@ -200,9 +221,14 @@ namespace WpfDemo
 
         private void SpeechItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            if (!btnRecord.IsEnabled) // 正在录音中，不允许播放
+            {
+                return;
+            }
+
             var g = sender as Grid;
             var vm = g.DataContext as SpxItemViewModel;
-            if (vm == null)
+            if (vm == null || string.IsNullOrEmpty(vm.DecodedWavFilePath))
             {
                 return;
             }

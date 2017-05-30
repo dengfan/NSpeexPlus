@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
@@ -11,11 +12,60 @@ namespace WpfDemo
         public ObservableCollection<SpxItemViewModel> SpxList { get; set; }
     }
 
-    public class SpxItemViewModel
+    public class SpxItemViewModel : INotifyPropertyChanged
     {
-        public double TimeLength { get; set; }
-        public string EncodedSpxFilePath { get; set; }
-        public string DecodedWavFilePath { get; set; }
+        private double timeLength;
+        private string encodedSpxFilePath;
+        private string decodedWavFilePath;
+
+        public double TimeLength
+        {
+            get
+            {
+                return timeLength;
+            }
+            set
+            {
+                if (value != this.timeLength)
+                {
+                    this.timeLength = value;
+                    NotifyPropertyChanged("TimeLength");
+                    NotifyPropertyChanged("SecondInfo");
+                    NotifyPropertyChanged("Width");
+                }
+            }
+        }
+        public string EncodedSpxFilePath
+        {
+            get
+            {
+                return encodedSpxFilePath;
+            }
+            set
+            {
+                if (value != this.encodedSpxFilePath)
+                {
+                    this.encodedSpxFilePath = value;
+                    NotifyPropertyChanged("EncodedSpxFilePath");
+                    NotifyPropertyChanged("SpxFileName");
+                }
+            }
+        }
+        public string DecodedWavFilePath
+        {
+            get
+            {
+                return decodedWavFilePath;
+            }
+            set
+            {
+                if (value != this.decodedWavFilePath)
+                {
+                    this.decodedWavFilePath = value;
+                    NotifyPropertyChanged("DecodedWavFilePath");
+                }
+            }
+        }
         public string SpxFileName
         {
             get
@@ -37,5 +87,16 @@ namespace WpfDemo
                 return Convert.ToInt32(TimeLength * 5);
             }
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged(String propertyName = "")
+        {
+            if (this.PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
     }
 }
