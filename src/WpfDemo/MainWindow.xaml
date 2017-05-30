@@ -6,10 +6,11 @@
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:local="clr-namespace:WpfDemo"
         mc:Ignorable="d"
-        Title="WPF Demo For NSpeex Plus" Height="480" Width="640" MinWidth="360" MinHeight="320">
+        Title="WPF Demo For NSpeex Plus" Height="480" Width="640" MinWidth="400" MinHeight="320">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -53,26 +54,11 @@
                     </Button.Template>
                 </Button>
             </Border>
-
-            <Grid Margin="4" Visibility="Collapsed">
-                <Grid.Resources>
-                    <Style TargetType="Button">
-                        <Setter Property="Margin" Value="4"/>
-                        <Setter Property="VerticalAlignment" Value="Top"/>
-                        <Setter Property="Height" Value="48"/>
-                    </Style>
-                </Grid.Resources>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Button Grid.Row="1" Grid.Column="0" x:Name="btnWav2Spx" Content="Wav To Spx" Click="btnWav2Spx_Click"/>
-                <Button Grid.Row="1" Grid.Column="1" x:Name="btnSpx2Wav" Content="Spx To Wav" Click="btnSpx2Wav_Click"/>
-            </Grid>
+        </StackPanel>
+        
+        <StackPanel Grid.Row="2" Margin="4" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button x:Name="btnWav2Spx" Margin="4" Padding="8,4" Content="Wav To Spx" Click="btnWav2Spx_Click"/>
+            <Button x:Name="btnSpx2Wav" Margin="4" Padding="8,4" Content="Spx To Wav" Click="btnSpx2Wav_Click"/>
         </StackPanel>
     </Grid>
 </Window>

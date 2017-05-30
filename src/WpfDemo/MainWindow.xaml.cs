@@ -17,7 +17,6 @@ using NSpeex.Plus;
 using System.IO;
 using System.Windows.Threading;
 using System.Collections.ObjectModel;
-using NSpeex.Plus;
 
 namespace WpfDemo
 {
@@ -35,7 +34,7 @@ namespace WpfDemo
         static bool? isCancel;
         static double currentTicks = 0;
         static readonly double interval = 60;
-        static readonly double totalTicks = 58000 / interval;
+        static readonly double totalTicks = 57000 / interval;
         static MainViewModel vm;
 
         string wavFilePath;
@@ -147,11 +146,19 @@ namespace WpfDemo
             spxFilePath = wavFilePath + ".spx";
             waveFile = new WaveFileWriter(wavFilePath, waveSource.WaveFormat);
 
-            // 录音中的占位项
-            recordingItem = new SpxItemViewModel { TimeLength = 0, EncodedSpxFilePath = string.Format("{0}.wav.spx is recording...", dateTimeStr), DecodedWavFilePath = null };
-            vm.SpxList.Add(recordingItem);
+            try
+            {
+                waveSource.StartRecording();
 
-            waveSource.StartRecording();
+                // 录音中的占位项
+                recordingItem = new SpxItemViewModel { TimeLength = 0, EncodedSpxFilePath = string.Format("{0}.wav.spx is recording...", dateTimeStr), DecodedWavFilePath = null };
+                vm.SpxList.Add(recordingItem);
+            }
+            catch
+            {
+
+            }
+            
         }
 
         private void StopRecording()
@@ -164,7 +171,7 @@ namespace WpfDemo
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-            if (currentTicks % 16 == 0)
+            if (currentTicks % 16 == 0 && recordingItem != null)
             {
                 recordingItem.TimeLength = currentTicks / 16;
             }
