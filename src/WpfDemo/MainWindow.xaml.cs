@@ -35,7 +35,7 @@ namespace WpfDemo
         static bool? isCancel;
         static double currentTicks = 0;
         static readonly double interval = 60;
-        static readonly double totalTicks = 60000 / interval;
+        static readonly double totalTicks = 58000 / interval;
         static MainViewModel vm;
 
         string wavFilePath;
@@ -148,7 +148,7 @@ namespace WpfDemo
             waveFile = new WaveFileWriter(wavFilePath, waveSource.WaveFormat);
 
             // 录音中的占位项
-            recordingItem = new SpxItemViewModel { TimeLength = 1, EncodedSpxFilePath = string.Format("{0}.wav.spx is recording...", dateTimeStr), DecodedWavFilePath = null };
+            recordingItem = new SpxItemViewModel { TimeLength = 0, EncodedSpxFilePath = string.Format("{0}.wav.spx is recording...", dateTimeStr), DecodedWavFilePath = null };
             vm.SpxList.Add(recordingItem);
 
             waveSource.StartRecording();
@@ -164,6 +164,11 @@ namespace WpfDemo
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
+            if (currentTicks % 16 == 0)
+            {
+                recordingItem.TimeLength = currentTicks / 16;
+            }
+
             if (currentTicks - totalTicks >= 5)
             {
                 StopRecording();

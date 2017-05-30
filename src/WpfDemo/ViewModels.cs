@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Windows.Media;
 
 namespace WpfDemo
 {
@@ -63,6 +64,7 @@ namespace WpfDemo
                 {
                     this.decodedWavFilePath = value;
                     NotifyPropertyChanged("DecodedWavFilePath");
+                    NotifyPropertyChanged("BackgroundColor");
                 }
             }
         }
@@ -85,6 +87,14 @@ namespace WpfDemo
             get
             {
                 return Convert.ToInt32(TimeLength * 5);
+            }
+        }
+
+        public SolidColorBrush BackgroundColor
+        {
+            get
+            {
+                return string.IsNullOrEmpty(DecodedWavFilePath) ? new SolidColorBrush(Colors.MediumSpringGreen) : new SolidColorBrush(Colors.LightSkyBlue);
             }
         }
 
