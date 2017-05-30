@@ -19,9 +19,12 @@
                     <DataTemplate>
                         <Grid MouseLeftButtonDown="SpeechItem_MouseLeftButtonDown">
                             <TextBlock Margin="8,4,0,0" Text="{Binding SpxFileName}" Foreground="Black"/>
-                            <Border Margin="8,24,0,8" Background="{Binding BackgroundColor}" CornerRadius="0,18,18,18" Height="36" Width="{Binding Width}" MinWidth="40" MaxWidth="320" HorizontalAlignment="Left">
-                                <TextBlock Margin="0,0,12,0" Text="{Binding SecondInfo}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White"/>
-                            </Border>
+                            <StackPanel Margin="8,24,0,8" Orientation="Horizontal">
+                                <Border Margin="0,0,8,0" Background="{Binding BackgroundColor}" CornerRadius="0,18,18,18" Height="36" Width="{Binding Width}" MinWidth="40" MaxWidth="320" HorizontalAlignment="Left">
+                                    <TextBlock Margin="0,0,12,0" Text="{Binding SecondInfo}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White"/>
+                                </Border>
+                                <fa:ImageAwesome Icon="Spinner" Width="16" Height="16" VerticalAlignment="Center" Foreground="LightGray" Spin="{Binding IsSpinLoadingIcon}" Visibility="{Binding IsShowLoadingIcon}"/>
+                            </StackPanel>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -44,11 +47,7 @@
                     <Button.Template>
                         <ControlTemplate>
                             <Border Width="48" Height="48" CornerRadius="24" Background="MediumSpringGreen">
-                                <fa:ImageAwesome Icon="Wifi" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Foreground="White">
-                                    <fa:ImageAwesome.RenderTransform>
-                                        <RotateTransform Angle="90"/>
-                                    </fa:ImageAwesome.RenderTransform>
-                                </fa:ImageAwesome>
+                                <fa:ImageAwesome Icon="Wifi" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Foreground="White" Rotation="90"/>
                             </Border>
                         </ControlTemplate>
                     </Button.Template>

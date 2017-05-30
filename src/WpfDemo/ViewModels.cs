@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Windows;
 using System.Windows.Media;
 
 namespace WpfDemo
@@ -65,6 +66,8 @@ namespace WpfDemo
                     this.decodedWavFilePath = value;
                     NotifyPropertyChanged("DecodedWavFilePath");
                     NotifyPropertyChanged("BackgroundColor");
+                    NotifyPropertyChanged("IsShowLoadingIcon");
+                    NotifyPropertyChanged("IsSpinLoadingIcon");
                 }
             }
         }
@@ -95,6 +98,22 @@ namespace WpfDemo
             get
             {
                 return string.IsNullOrEmpty(DecodedWavFilePath) ? new SolidColorBrush(Colors.MediumSpringGreen) : new SolidColorBrush(Colors.LightSkyBlue);
+            }
+        }
+
+        public Visibility IsShowLoadingIcon
+        {
+            get
+            {
+                return string.IsNullOrEmpty(DecodedWavFilePath) ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        public bool IsSpinLoadingIcon
+        {
+            get
+            {
+                return string.IsNullOrEmpty(DecodedWavFilePath);
             }
         }
 
